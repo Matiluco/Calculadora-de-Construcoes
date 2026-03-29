@@ -109,16 +109,16 @@ content = `
             <table class="inlineTable modes">
 		        <tbody>
 			        <tr>
-				        <th>Ã‰pÃ­tÃ©s</th>
-				        <th>Szint</th>
-				        <th>Fa</th>
-				        <th>Agyag</th>
-				        <th>Vas</th>
-				        <th>NÃ©pessÃ©g</th>
-				        <th>Pont</th>
+				        <th>Edifício</th>
+				        <th>Nível</th>
+				        <th>Madeira</th>
+				        <th>Argila</th>
+				        <th>Ferro</th>
+				        <th>População</th>
+				        <th>Pontos</th>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.main}>FÅ‘hadiszÃ¡llÃ¡s</td>
+				        <td><img src=${imageSrc.main}>Edifício principal</td>
 				        <td><input type="number" id="headquarters" class="building" maxlength="2" min="1" max="30" autofocus></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -127,7 +127,7 @@ content = `
 				        <td class="points">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.barracks}>Barakk</td>
+				        <td><img src=${imageSrc.barracks}>Quartel</td>
 				        <td><input type="number" id="barracks" class="building" maxlength="2" min="0" max="25"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -136,7 +136,7 @@ content = `
 				        <td class="points">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.stable}>IstÃ¡llÃ³</td>
+				        <td><img src=${imageSrc.stable}>Estábulo</td>
 				        <td><input type="number" id="stable" class="building" maxlength="2" min="0" max="20"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -145,7 +145,7 @@ content = `
 				        <td class="points">0</td>
                     		</tr>
 			        <tr>
-				        <td><img src=${imageSrc.garage}>MÅ±hely</td>
+				        <td><img src=${imageSrc.garage}>Oficina</td>
 				        <td><input type="number" id="garage" class="building" maxlength="2" min="0" max="15"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -154,7 +154,7 @@ content = `
 				        <td class="points">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.church}>Templom</td>
+				        <td><img src=${imageSrc.church}>Igreja</td>
 				        <td><input type="number" id="church" class="building" maxlength="1" min="0" max="3"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -163,7 +163,7 @@ content = `
 				        <td class="points">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.church_f}>ElsÅ‘ templom</td>
+				        <td><img src=${imageSrc.church_f}>Primeira igreja</td>
 				        <td><input type="number" id="church_f" class="building" maxlength="1" min="0" max="1"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -172,7 +172,7 @@ content = `
 				        <td class="points">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.watchtower}>Årtorony</td>
+				        <td><img src=${imageSrc.watchtower}>Torre de vigia</td>
 				        <td><input type="number" id="watchtower" class="building" maxlength="2" min="0" max="20"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -181,7 +181,7 @@ content = `
 				        <td class="points">0</td>
 			        </tr>
                     		<tr>
-				        <td><img src=${imageSrc.academy}>AkadÃ©mia</td>
+				        <td><img src=${imageSrc.academy}>Academia</td>
 				        <td><input type="number" id="academy" class="building" maxlength="1" min="0" max="1"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -190,7 +190,7 @@ content = `
 				        <td class="points">0</td>
                     		</tr>
 			        <tr>
-				        <td><img src=${imageSrc.smith}>KovÃ¡csmÅ±hely</td>
+				        <td><img src=${imageSrc.smith}>Ferreiro</td>
 				        <td><input type="number" id="smith" class="building" maxlength="2" min="0" max="20"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -199,7 +199,7 @@ content = `
 				        <td class="points">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.place}>GyÃ¼lekezÅ‘hely</td>
+				        <td><img src=${imageSrc.place}>Praça de reunião</td>
 				        <td><input type="number" id="place" class="building" maxlength="1" min="0" max="1"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -208,7 +208,7 @@ content = `
 				        <td class="points">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.statue}>Szobor</td>
+				        <td><img src=${imageSrc.statue}>Estátua</td>
 				        <td><input type="number" id="statue" class="building" maxlength="1" min="0" max="1"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -217,7 +217,7 @@ content = `
 				        <td class="points">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.market}>Piac</td>
+				        <td><img src=${imageSrc.market}>Mercado</td>
 				        <td><input type="number" id="market" class="building" maxlength="2" min="0" max="25"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -226,7 +226,7 @@ content = `
 				        <td class="points">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.timber_camp}>FavÃ¡gÃ³</td>
+				        <td><img src=${imageSrc.timber_camp}>Bosque</td>
 				        <td><input type="number" id="timber_camp" class="building" maxlength="2" min="0" max="30"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -235,7 +235,7 @@ content = `
 				        <td class="points">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.clay_pit}>AgyagbÃ¡nya</td>
+				        <td><img src=${imageSrc.clay_pit}>Poço de argila</td>
 				        <td><input type="number" id="clay_pit" class="building" maxlength="2" min="0" max="30"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -244,7 +244,7 @@ content = `
 				        <td class="points">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.iron_mine}>VasbÃ¡nya</td>
+				        <td><img src=${imageSrc.iron_mine}>Mina de ferro</td>
 				        <td><input type="number" id="iron_mine" class="building" maxlength="2" min="0" max="30"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -253,7 +253,7 @@ content = `
 				        <td class="points">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.farm}>Tanya</td>
+				        <td><img src=${imageSrc.farm}>Fazenda</td>
 				        <td><input type="number" id="farm" class="building" maxlength="2" min="1" max="30"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -262,8 +262,8 @@ content = `
 				        <td class="points">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.warehouse}>RaktÃ¡r</td>
-				        <td><input type="number" id="warehouse" class="building" maxlength="2" min="1" max="30"</td>
+				        <td><img src=${imageSrc.warehouse}>Armazém</td>
+				        <td><input type="number" id="warehouse" class="building" maxlength="2" min="1" max="30"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
 				        <td class="ironCost">0</td>
@@ -271,7 +271,7 @@ content = `
 				        <td class="points">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.hide}>Rejtekhely</td>
+				        <td><img src=${imageSrc.hide}>Esconderijo</td>
 				        <td><input type="number" id="hide" class="building" maxlength="2" min="0" max="10"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -280,7 +280,7 @@ content = `
 				        <td class="points">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.wall}>Fal</td>
+				        <td><img src=${imageSrc.wall}>Muralha</td>
 				        <td><input type="number" id="wall" class="building" maxlength="2" min="0" max="20"></td>
 				        <td class="woodCost">0</td>
 				        <td class="stoneCost">0</td>
@@ -294,32 +294,32 @@ content = `
 				        <td><img src=${imageSrc.wood}>&nbsp<span id="currentBuildingsWoodCost">0</span></td>
 				        <td><img src=${imageSrc.stone}>&nbsp<span id="currentBuildingsStoneCost">0</span></td>
 				        <td><img src=${imageSrc.iron}>&nbsp<span id="currentBuildingsIronCost">0</span></td>
-				        <td class="crosshatchedright" colspan="2">&#x21E6; AktuÃ¡lis szintek kÃ¶ltsÃ©gei</td>
+				        <td class="crosshatchedright" colspan="2">&#x21E6; Custos dos níveis atuais</td>
 			        </tr>
 			        <tr>
-				        <td class="crosshatchedleft">Minimum szint:</td>
+				        <td class="crosshatchedleft">Nível mínimo:</td>
 				        <td style="text-align:center"><input type="radio" id="minimum" onclick="minimum()" name="name"></td>
 			        </tr>
 			        <tr>
-				        <td class="crosshatchedright">Maximum szint:</td>
+				        <td class="crosshatchedright">Nível máximo:</td>
 				        <td style="text-align:center"><input type="radio" id="maximum" onclick="maximum()" name="name"></td>
 			        </tr>
 		        </tbody>
 	        </table>
         </div>
-        <div style="float: left;margin-right:10px">
+                <div style="float: left;margin-right:10px">
 	        <table class="inlineTable">
 		        <tbody>
 			        <tr>
-				        <th>EgysÃ©g</th>
-				        <th>MennyisÃ©g</th>
-				        <th>KÃ©pzÃ©si idÅ‘</th>
-				        <th>Ã‰pÃ¼letenkÃ©nt</th>
-				        <th>SzÃ¡llÃ­tÃ¡si kapacitÃ¡s</th>
-				        <th>Tanyahely</th>
+				        <th>Unidade</th>
+				        <th>Quantidade</th>
+				        <th>Tempo de recrutamento</th>
+				        <th>Total por edifício</th>
+				        <th>Capacidade de carga</th>
+				        <th>Espaço na fazenda</th>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.spear}>LÃ¡ndzsÃ¡s</td>
+				        <td><img src=${imageSrc.spear}>Lanceiro</td>
 				        <td><input type="number" id="spear" class="unit" maxlength="5" min="0" max="32000"></td>
 				        <td>
                             <span>
@@ -332,7 +332,7 @@ content = `
 				        <td class="pop">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.sword}>Kardos</td>
+				        <td><img src=${imageSrc.sword}>Espadachim</td>
 				        <td><input type="number" id="sword" class="unit" maxlength="5" min="0" max="32000"></td>
 				        <td>
                             <span>
@@ -344,7 +344,7 @@ content = `
 				        <td class="pop">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.axe}>BÃ¡rdos</td>
+				        <td><img src=${imageSrc.axe}>Bárbaro</td>
 				        <td><input type="number" id="axe" class="unit" maxlength="5" min="0" max="32000"></td>
 				        <td>
                             <span>
@@ -356,7 +356,7 @@ content = `
 				        <td class="pop">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.archer}>ÃjÃ¡sz</td>
+				        <td><img src=${imageSrc.archer}>Arqueiro</td>
 				        <td><input type="number" id="archer" class="unit" maxlength="5" min="0" max="32000"></td>
 				        <td>
                             <span>
@@ -368,7 +368,7 @@ content = `
 				        <td class="pop">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.spy}>KÃ©m</td>
+				        <td><img src=${imageSrc.spy}>Espião</td>
 				        <td><input type="number" id="spy" class="unit" maxlength="5" min="0" max="32000"></td>
 				        <td>
                             <span>
@@ -381,7 +381,7 @@ content = `
 				        <td class="pop">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.light}>KÃ¶nnyÅ±lovas</td>
+				        <td><img src=${imageSrc.light}>Cavalaria leve</td>
 				        <td><input type="number" id="light" class="unit" maxlength="5" min="0" max="32000"></td>
 				        <td>
                             <span>
@@ -393,7 +393,7 @@ content = `
 				        <td class="pop">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.marcher}>LovasÃ­jÃ¡sz</td>
+				        <td><img src=${imageSrc.marcher}>Arqueiro montado</td>
 				        <td><input type="number" id="marcher" class="unit" maxlength="5" min="0" max="32000"></td>
 				        <td>
                             <span>
@@ -405,7 +405,7 @@ content = `
 				        <td class="pop">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.heavy}>NehÃ©zlovas</td>
+				        <td><img src=${imageSrc.heavy}>Cavalaria pesada</td>
 				        <td><input type="number" id="heavy" class="unit" maxlength="5" min="0" max="32000"></td>
 				        <td>
                             <span>
@@ -417,7 +417,7 @@ content = `
 				        <td class="pop">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.ram}>FaltÃ¶rÅ‘ kos</td>
+				        <td><img src=${imageSrc.ram}>Ariete</td>
 				        <td><input type="number" id="ram" class="unit" maxlength="5" min="0" max="32000"></td>
 				        <td>
                             <span>
@@ -430,7 +430,7 @@ content = `
 				        <td class="pop">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.catapult}>Katapult</td>
+				        <td><img src=${imageSrc.catapult}>Catapulta</td>
 				        <td><input type="number" id="catapult" class="unit" maxlength="5" min="0" max="32000"></td>
 				        <td>
                             <span>
@@ -442,7 +442,7 @@ content = `
 				        <td class="pop">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.knight}>Lovag</td>
+				        <td><img src=${imageSrc.knight}>Paladino</td>
 				        <td><input type="number" id="knight" class="unit" maxlength="5" min="0" max="32000"></td>
 				        <td>
                             <span>
@@ -455,7 +455,7 @@ content = `
 				        <td class="pop">0</td>
 			        </tr>
 			        <tr>
-				        <td><img src=${imageSrc.snob}>Nemes</td>
+				        <td><img src=${imageSrc.snob}>Nobre</td>
 				        <td><input type="number" id="snob" class="unit" maxlength="5" min="0" max="32000"></td>
 				        <td>
                             <span>
@@ -468,7 +468,7 @@ content = `
 				        <td class="pop">0</td>
 			        </tr>
 			        <tr class="spaceUnder">
-				        <td><img src=${imageSrc.militia}>MilÃ­cia</td>
+				        <td><img src=${imageSrc.militia}>Milícia</td>
 				        <td><input type="number" id="militia" class="unit" maxlength="5" min="0" max="32000"></td>
 				        <td>
                             <span>
@@ -483,14 +483,14 @@ content = `
                     <tr class="separator" />
 		        </tbody>
             </table>
-            <table class="inlineTable bonus">
+                       <table class="inlineTable bonus">
                 <tbody>
 			        <tr>
-                        <th colspan="3">Nyersanyag bÃ³nusz<img src=${imageSrc.questionMark} title="${helpTooltip.resource}" class="tooltip"></th>
+                        <th colspan="3">Bônus de recursos<img src=${imageSrc.questionMark} title="${helpTooltip.resource}" class="tooltip"></th>
                         <th class="space"></th>
-                        <th colspan="3">NÃ©pessÃ©g bÃ³nusz<img src=${imageSrc.questionMark} title="${helpTooltip.pop}" class="tooltip"></th>
+                        <th colspan="3">Bônus de população<img src=${imageSrc.questionMark} title="${helpTooltip.pop}" class="tooltip"></th>
                         <th class="space"></th>
-                        <th colspan="2">TeherbÃ­rÃ¡s bÃ³nusz<img src=${imageSrc.questionMark} title="${helpTooltip.haul}" class="tooltip"></th>
+                        <th colspan="2">Bônus de carga<img src=${imageSrc.questionMark} title="${helpTooltip.haul}" class="tooltip"></th>
                     </tr>
 			        <tr>
 				        <td><img src=${imageSrc.timber_camp}><input class="bon" id="woodBonus" type="number" min="0" max="500" value="0"></td>
@@ -510,11 +510,11 @@ content = `
             <table class="inlineTable bonus">
                 <tbody>
                     <tr>
-                        <th colspan="4">KÃ©pzÃ©s bÃ³nusz<img src=${imageSrc.questionMark} title="${helpTooltip.recruit}" class="tooltip"></th>
+                        <th colspan="4">Bônus de recrutamento<img src=${imageSrc.questionMark} title="${helpTooltip.recruit}" class="tooltip"></th>
                         <th class="space"></th>
-                        <th colspan="2">Piac bÃ³nusz<img src=${imageSrc.questionMark} title="${helpTooltip.market}" class="tooltip"></th>
+                        <th colspan="2">Bônus de mercado<img src=${imageSrc.questionMark} title="${helpTooltip.market}" class="tooltip"></th>
                         <th class="space"></th>
-                        <th colspan="2">RaktÃ¡r bÃ³nusz<img src=${imageSrc.questionMark} title="${helpTooltip.storage}" class="tooltip"></th>
+                        <th colspan="2">Bônus de armazém<img src=${imageSrc.questionMark} title="${helpTooltip.storage}" class="tooltip"></th>
                     </tr>
                     <tr>
 				        <td><img src=${imageSrc.barracks}><input class="bon" id="barracksBonus" type="number" min="0" max="500" value="0"></td>
@@ -531,23 +531,23 @@ content = `
                     <tr class="separator" />
 		        </tbody>
             </table>
-            <table class="inlineTable border"">
+            <table class="inlineTable border">
                 <tbody>
                     <tr>
                         <td>
-                            <label for="sablon">Profilok: </label>
+                            <label for="sablon">Perfis: </label>
                             <select id="sablon">
-                                <option selected hidden>opciÃ³k</option>
+                                <option selected hidden>opções</option>
                             </select>
                             &nbsp;
-                            <input type="button" value="MentÃ©s" onclick="store()">
+                            <input type="button" value="Salvar" onclick="store()">
                             &nbsp;
-                            <input type="button" value="TÃ¶rlÃ©s" onclick="removeOptions()">
+                            <input type="button" value="Excluir" onclick="removeOptions()">
                             &nbsp;
-                            <input type="button" value="Export" onclick="exports()">
+                            <input type="button" value="Exportar" onclick="exports()">
                             &nbsp;
-                            <input type="button" value="Import" onclick="imports()">
-                            <b><code>Created by <a href="${forumURL}" target="_blank">Ã¶reg</a></code></b>
+                            <input type="button" value="Importar" onclick="imports()">
+                            <b><code>Criado por <a href="${forumURL}" target="_blank">öreg</a></code></b>
                         </td>
                     </tr>
 		        </tbody>
@@ -557,66 +557,66 @@ content = `
 	        <table class="inlineTable modesb">
 		        <tbody>
 			        <tr>
-				        <th colspan="2">Ã‰pÃ¼letek tulajdonsÃ¡gai</th>
+				        <th colspan="2">Propriedades dos edifícios</th>
 			        </tr>
 			        <tr>
-				        <td style="width: 50%"><img src=${imageSrc.header}>Tanya fÃ©rÅ‘hely</td>
+				        <td style="width: 50%"><img src=${imageSrc.header}>Capacidade da fazenda</td>
 				        <td class="property" id="population" style="width: 50%">0</td>
 			        </tr>
 			        <tr>
-				        <td style="width: 50%"><img src=${imageSrc.header}>NÃ©pessÃ©g-foglalt fÃ©rÅ‘hely</td>
+				        <td style="width: 50%"><img src=${imageSrc.header}>População ocupada</td>
 				        <td class="property" id="locked" style="width: 50%">0</td>
 			        </tr>
 			        <tr>
-				        <td style="width: 50%"><img src=${imageSrc.header}>NÃ©pessÃ©g-mÃ©g szabad fÃ©rÅ‘hely</td>
+				        <td style="width: 50%"><img src=${imageSrc.header}>População livre</td>
 				        <td class="property" id="free" style="width: 50%">0</td>
 			        </tr>
 			        <tr>
-				        <td style="width: 50%"><img src=${imageSrc.gold}>Pontok</td>
+				        <td style="width: 50%"><img src=${imageSrc.gold}>Pontos</td>
 				        <td class="property" id="sumPoints" style="width: 50%">0</td>
 			        </tr>
 			        <tr>
-				        <td style="width: 50%"><img src=${imageSrc.hide}>Rejtett nyersanyagok</td>
+				        <td style="width: 50%"><img src=${imageSrc.hide}>Recursos escondidos</td>
 				        <td class="property" id="hiddenResources" style="width: 50%">0</td>
 			        </tr>
 			        <tr>
-				        <td style="width: 50%"><img src=${imageSrc.market}>KereskedÅ‘k szÃ¡ma</td>
+				        <td style="width: 50%"><img src=${imageSrc.market}>Número de mercadores</td>
 				        <td class="property" id="merchants" style="width: 50%">0</td>
 			        </tr>
 			        <tr>
-				        <td style="width: 50%"><img src=${imageSrc.warehouse}>RaktÃ¡r kapacitÃ¡s</td>
+				        <td style="width: 50%"><img src=${imageSrc.warehouse}>Capacidade do armazém</td>
 				        <td class="property" id="capacity" style="width: 50%">0</td>
 			        </tr>
 			        <tr>
-				        <td style="width: 50%"><img src=${imageSrc.wall}>Fal vÃ©delmi bÃ³nusz</td>
+				        <td style="width: 50%"><img src=${imageSrc.wall}>Bônus defensivo da muralha</td>
 				        <td class="property" id="wallBonus" style="width: 50%">0</td>
 			        </tr>
 			        <tr>
-				        <td style="width: 50%"><img src=${imageSrc.timber_camp}>Fa termelÃ©s</td>
+				        <td style="width: 50%"><img src=${imageSrc.timber_camp}>Produção de madeira</td>
 				        <td class="property" id="woodProd" style="width: 50%">0</td>
 			        </tr>
 			        <tr>
-				        <td style="width: 50%"><img src=${imageSrc.clay_pit}>Agyag termelÃ©s</td>
+				        <td style="width: 50%"><img src=${imageSrc.clay_pit}>Produção de argila</td>
 				        <td class="property" id="stoneProd" style="width: 50%">0</td>
 			        </tr>
 			        <tr>
-				        <td style="width: 50%"><img src=${imageSrc.iron_mine}>Vas termelÃ©s</td>
+				        <td style="width: 50%"><img src=${imageSrc.iron_mine}>Produção de ferro</td>
 				        <td class="property" id="ironProd" style="width: 50%">0</td>
 			        </tr>
                     <tr class="separator" />
 		        </tbody>
 	        </table>
-            <table class="inlineTable modesc">
+                        <table class="inlineTable modesc">
                 <tbody>
 			        <tr>
-				        <th colspan="6">KÃ¶ltsÃ©gek</th>
+				        <th colspan="6">Custos</th>
 			        </tr>
 			        <tr>
-				        <td>EgysÃ©gek</td>
+				        <td>Unidades</td>
 				        <td></td>
-				        <td>Ã‰pÃ¼letek</td>
+				        <td>Edifícios</td>
 				        <td></td>
-				        <td>Teljes</td>
+				        <td>Total</td>
 				        <td></td>
 			        </tr>
 			        <tr>
@@ -705,12 +705,13 @@ function createIssue(repoName, repoOwner, issueTitle, issueBody, accessToken) {
         },
         data: JSON.stringify({
             title: issueTitle, 
-            body: issueBody +"\n" + text
+            body: issueBody + "\n" + text
         }),
         success: function(msg){
-            UI.SuccessMessage("Az Ã¼zeneted sikeresen tovÃ¡bbÃ­tottuk!", 5000);        },
+            UI.SuccessMessage("Sua mensagem foi enviada com sucesso!", 5000);
+        },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
-            UI.ErrorMessage("Valami hiba tÃ¶rtÃ©nt, nem sikerÃ¼lt elkÃ¼ldeni az adatokat!", 5000);
+            UI.ErrorMessage("Algo deu errado. Não foi possível enviar os dados!", 5000);
         }
     })
 }
