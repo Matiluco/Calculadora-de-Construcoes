@@ -8,7 +8,7 @@ let units = ["spear","sword","axe","archer","spy","light","marcher","heavy","ram
 let datas = ["max_level","min_level","wood","stone","iron","pop","wood_factor","stone_factor","iron_factor","pop_factor","build_time","build_time_factor"];
 let dat = ["build_time","pop","speed","attack","defense","defense_cavalry","defense_archer","carry"];
 let firstLevelPoint = [10,16,20,24,10,10,42,512,19,0,24,10,6,6,6,5,6,5,8];
-let forumURL = "https://forum.tribalwars.net/index.php?members/oreg.123551";
+let forumURL = "https://forum.tribalwars.com.br/index.php?members/mat-legend.106854/";
 let gear = "https://raw.githubusercontent.com/oreg-kh/Unit-and-building-simulator/master/gear.png";
 let token = atob("ZjRiNDIzZWE4MzgxMDJmZmNkMTdmY2M4MDdmY2Y1MTkxZjlkN2I5Yw==");
 const obj = {buildingsObj: {}, unitsObj: {}, world: {}};
@@ -547,7 +547,7 @@ content = `
                             <input type="button" value="Exportar" onclick="exports()">
                             &nbsp;
                             <input type="button" value="Importar" onclick="imports()">
-                            <b><code>Criado por <a href="${forumURL}" target="_blank">öreg</a></code></b>
+                            <b><code>Criado por <a href="${forumURL}" target="_blank">Mat-Legend</a></code></b>
                         </td>
                     </tr>
 		        </tbody>
