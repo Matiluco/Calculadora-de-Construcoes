@@ -1072,25 +1072,25 @@ initCss(`
     }
 `);
 
-// Ãºj opciÃ³ hozzÃ¡adÃ¡sa a legÃ¶rdÃ¼lÅ‘ listÃ¡hoz
+// adiciona uma nova opção à lista suspensa
 function createOption(option_name) {
   $("#sablon").append(`<option>${option_name}</option>`)
 }
 
-// eltÃ¡rolja az inputokat egy tÃ¶mbben
+// armazena os inputs em um array
 function getAllInputValue() {
     var array = [];
     for (var i = 0; i < 48; i++) {
         array.push($("#myTable").find("input").eq(i).val());
     }
-    var name = prompt("KÃ©rlek add meg milyen nÃ©ven szeretnÃ©d menteni a beÃ¡llÃ­tÃ¡saidat!");
+    var name = prompt("Digite o nome com que deseja salvar suas configurações:");
     return {array,name}
 }
 
-// eltÃ¡rolja az inputokat localStorage-ban, hozzÃ¡ad egy Ãºj opciÃ³t a profilokhoz
+// salva os inputs no localStorage e adiciona uma nova opção aos perfis
 function store() {
     var pre = getAllInputValue();
-    name = "Ã¶regsaver_" + pre.name;
+    name = "öregsaver_" + pre.name;
     var object = {
             "inputs":    pre.array
     };
@@ -1098,53 +1098,53 @@ function store() {
     createOption(pre.name);
 }
 
-// profilok betÃ¶ltÃ©se a legÃ¶rdÃ¼lÅ‘ listÃ¡ba
+// carrega os perfis na lista suspensa
 function loadSelectMenu() {
     for(var key in localStorage) {
-        if (key.includes("Ã¶regsaver")) {
+        if (key.includes("öregsaver")) {
             createOption(key.split("_")[1]);
         }
     }
 }
 
-// a kivÃ¡lasztott elem eltÃ¡volÃ­tÃ¡sa a legÃ¶rdÃ¼lÅ‘ listÃ¡bÃ³l
+// remove o item selecionado da lista suspensa
 function removeOptions() {
     var item = $("#sablon").find(":selected");
     var optionName = item.text();
     item.remove();
     for(var key in localStorage) {
-        if (key == `Ã¶regsaver_${optionName}`) {
+        if (key == `öregsaver_${optionName}`) {
             localStorage.removeItem(key);
         }
     } 
 }
 
-// a kivÃ¡lasztott profil exportÃ¡lÃ¡sa
+// exporta o perfil selecionado
 function exports() {
     var item = $("#sablon").find(":selected");
     var optionName = item.text();
-    if (optionName != "opciÃ³k") {
-        var val = localStorage.getItem(`Ã¶regsaver_${optionName}`);
+    if (optionName != "opções") {
+        var val = localStorage.getItem(`öregsaver_${optionName}`);
         var key = optionName;
         prompt(prompts.text,key + "," + val);
     }
 }
 
-// profil importÃ¡lÃ¡sa
+// importa um perfil
 function imports() {
-    var importCode = prompt("Illeszd be az exportÃ¡lÃ¡skor kapott kÃ³dot:");
+    var importCode = prompt("Cole aqui o código recebido na exportação:");
     var key = importCode.split(",")[0];
     var val = importCode.split(",")[1];
-    localStorage.setItem(`Ã¶regsaver_${key}`, val);
+    localStorage.setItem(`öregsaver_${key}`, val);
     createOption(key);
 }
 
-// esemÃ©nykezelÅ‘ a profil kivÃ¡lasztÃ¡sakor
+// evento ao selecionar um perfil
 $("#sablon").on("click", function(event) {
     var item = $("#sablon").find(":selected");
     var optionName = item.text();
-    if (optionName != "opciÃ³k") {
-        var val = localStorage.getItem(`Ã¶regsaver_${optionName}`);
+    if (optionName != "opções") {
+        var val = localStorage.getItem(`öregsaver_${optionName}`);
         var inputs = JSON.parse(atob(val)).inputs;
         for (var i = 0; i < 48; i++) {
             $("#myTable").find("input").eq(i).val(inputs[i]);
@@ -1155,17 +1155,18 @@ $("#sablon").on("click", function(event) {
     buildingsAndUnitsFunctions();
 })
 
-// Ã¼zenet lÃ©trehozÃ¡sa
+// cria uma mensagem
 function createMessage(type,message,time) {
     UI[type](message,time);
 }
 
-// visszaadja, hogy teljesÃ¼lt-e az Ã©pÃ­tÃ©shez szÃ¼ksÃ©ges elÅ‘feltÃ©tel
+// retorna se o pré-requisito necessário para construir foi atendido
 function buildingsLevel(building,level) {
     return Number($("#" + building).val()) >= level;
 }
 
-// engedÃ©lyezi az egysÃ©get, ha a kÃ©pzÃ©shez szÃ¼ksÃ©ges elÅ‘feltÃ©telek teljesÃ¼ltek, amelyik egysÃ©g nem lÃ©tezik a szerveren, azt nem oldja fel
+// habilita a unidade se os pré-requisitos de recrutamento forem atendidos;
+// se a unidade não existir no servidor, ela continua desabilitada
 function enableUnit(unit) {
     if (obj.unitsObj[unit].exist === false) {
         return document.getElementById(unit).disabled = true;
@@ -1174,7 +1175,8 @@ function enableUnit(unit) {
     }
 }
 
-// engedÃ©lyezi az Ã©pÃ¼letet, ha az Ã©pÃ­tÃ©shez szÃ¼ksÃ©ges elÅ‘feltÃ©telek teljesÃ¼ltek, amelyik Ã©pÃ¼let nem lÃ©tezik a szerveren, azt nem oldja fel
+// habilita o edifício se os pré-requisitos de construção forem atendidos;
+// se o edifício não existir no servidor, ele continua desabilitado
 function enableBuilding(building) {
     if (obj.buildingsObj[building].exist === false) {
         return document.getElementById(building).disabled = true;
@@ -1186,12 +1188,12 @@ function enableBuilding(building) {
     }
 }
 
-// egysÃ©g letiltÃ¡sa
+// desabilita a unidade
 function disableUnit(unit) {
     return document.getElementById(unit).disabled = true;
 }
 
-// Ã©pÃ¼let letiltÃ¡sa
+// desabilita o edifício
 function disableBuilding(building) {
     if (building == "snob") {
         building = "academy";
@@ -1199,7 +1201,8 @@ function disableBuilding(building) {
     return document.getElementById(building).disabled = true;
 }
 
-// letilt minden egysÃ©get, kivÃ©ve a lÃ¡ndzsÃ¡st Ã©s a kardost, mert azoknak nincs elÅ‘feltÃ©tele Ã©s minden szerveren lÃ©teznek
+// desabilita todas as unidades, exceto lanceiro e espadachim,
+// porque elas não têm pré-requisito e existem em todos os servidores
 function resetUnit() {
     for (var i = 2; i < units.length-1; i++) {
         disableUnit(units[i]);
@@ -1207,7 +1210,7 @@ function resetUnit() {
 }
 resetUnit();
 
-// letilt minden Ã©pÃ¼letet, aminek van elÅ‘feltÃ©tele
+// desabilita todos os edifícios que possuem pré-requisito
 function resetBuilding() {
     var building = ["barracks", "stable", "garage", "church", "watchtower", "academy", "smith", "market", "wall"];
     for (var i = 0; i < building.length; i++) {
@@ -1216,7 +1219,7 @@ function resetBuilding() {
 }
 resetBuilding();
 
-// az Ã©pÃ¼let szintek fa kÃ¶ltsÃ©gÃ©t szÃ¡molja
+// calcula o custo em madeira dos níveis dos edifícios
 function woodCost() {
     for (var i = 0; i < buildings.length; i++) {
         building_level = Number($(".building").eq(i).val());
@@ -1231,7 +1234,7 @@ function woodCost() {
     }
 }
 
-// az Ã©pÃ¼let szintek agyag kÃ¶ltsÃ©gÃ©t szÃ¡molja
+// calcula o custo em argila dos níveis dos edifícios
 function stoneCost() {
     for (var i = 0; i < buildings.length; i++) {
         building_level = Number($(".building").eq(i).val());
@@ -1246,7 +1249,7 @@ function stoneCost() {
     }
 }
 
-// az Ã©pÃ¼let szintek vas kÃ¶ltsÃ©gÃ©t szÃ¡molja
+// calcula o custo em ferro dos níveis dos edifícios
 function ironCost() {
     for (var i = 0; i < buildings.length; i++) {
         building_level = Number($(".building").eq(i).val());
@@ -1261,7 +1264,7 @@ function ironCost() {
     }
 }
 
-// az Ã©pÃ¼let szintek nÃ©pessÃ©g kÃ¶ltsÃ©gÃ©t szÃ¡molja
+// calcula o custo de população dos níveis dos edifícios
 function popCost() {
     for (var i = 0; i < buildings.length; i++) {
         building_level = Number($(".building").eq(i).val());
@@ -1277,7 +1280,7 @@ function popCost() {
     return true;
 }
 
-// az Ã©pÃ¼let szintek pontjÃ¡t szÃ¡molja
+// calcula os pontos dos níveis dos edifícios
 function points() {
     for (var i = 0; i < buildings.length; i++) {
         building_level = Number($(".building").eq(i).val());
@@ -1292,7 +1295,7 @@ function points() {
     return true;
 }
 
-// a falu pontszÃ¡mÃ¡t szÃ¡molja
+// calcula a pontuação da aldeia
 async function sumPoints() {
     var result = await points();
     var sum = 0;
@@ -1303,7 +1306,7 @@ async function sumPoints() {
     $("#sumPoints").text(numberWithCommas(sum));
 }
 
-// a rejtekhely Ã¡ltal elrejtett nyersanyagokat szÃ¡molja
+// calcula os recursos escondidos pelo esconderijo
 function hiddenResources() {
     hide_level = Number($("#hide").val());
     if (hide_level == 0 || hide_level == "") {
@@ -1318,7 +1321,7 @@ function hiddenResources() {
     }
 }
 
-// a kereskedÅ‘k szÃ¡mÃ¡t szÃ¡molja
+// calcula o número de mercadores
 function numberOfMerchants() {
     market_level = Number($("#market").val());
     if (market_level >= 10) {
@@ -1332,7 +1335,7 @@ function numberOfMerchants() {
     return text;
 }
 
-// a raktÃ¡r mÃ©retÃ©t szÃ¡molja
+// calcula a capacidade do armazém
 function capacity() {
     warehouse_level = Number($("#warehouse").val());
     if (warehouse_level == 0 || warehouse_level == "") {
@@ -1344,14 +1347,14 @@ function capacity() {
     return text;
 }
 
-// a fal bÃ³nuszt szÃ¡molja
+// calcula o bônus da muralha
 function wallBonus() {
     wall_level = Number($("#wall").val());
     text = (Math.pow(1.037, wall_level) - 1) * 100;
     $("#wallBonus").text(roundToNearestInteger(text) + "%");
 }
 
-// a fa termelÃ©st szÃ¡molja
+// calcula a produção de madeira
 function woodProd() {
     wood_level =  Number($("#timber_camp").val());
     if (wood_level == 0 || wood_level == "") {
@@ -1363,7 +1366,7 @@ function woodProd() {
     return {wood};
 }
 
-// a agyag termelÃ©st szÃ¡molja
+// calcula a produção de argila
 function stoneProd() {
     stone_level =  Number($("#clay_pit").val());
     if (stone_level == 0 || stone_level == "") {
@@ -1375,7 +1378,7 @@ function stoneProd() {
     return {stone};
 }
 
-// a vas termelÃ©st szÃ¡molja
+// calcula a produção de ferro
 function ironProd() {
     iron_level =  Number($("#iron_mine").val());
     if (iron_level == 0 || iron_level == "") {
@@ -1386,8 +1389,7 @@ function ironProd() {
     $("#ironProd").text(numberWithCommas(roundToNearestInteger(iron)));
     return {iron};
 }
-
-// a tanyahelyet szÃ¡molja
+// calcula a capacidade da fazenda
 function population() {
     pop_level = Number($("#farm").val());
     if (pop_level == 0 || pop_level == "") {
@@ -1399,7 +1401,7 @@ function population() {
     return text;
 }
 
-// az egysÃ©gek kÃ©pzÃ©si idejÃ©t szÃ¡molja
+// calcula o tempo de recrutamento das unidades
 function buildTimeOfUnit() {
     barracks_level = Number($("#barracks").val());
     stable_level = Number($("#stable").val());
@@ -1461,7 +1463,7 @@ function buildTimeOfUnit() {
     return true
 }
 
-// az egysÃ©gek teherbÃ­rÃ¡sÃ¡t szÃ¡molja
+// calcula a capacidade de carga das unidades
 function unitsHaul() {
     barracks_level = Number($("#barracks").val());
     stable_level = Number($("#stable").val());
@@ -1522,7 +1524,7 @@ function unitsHaul() {
     }
 }
 
-// az egysÃ©gek Ã¡ltal lefoglalt tanyahelyet szÃ¡molja
+// calcula o espaço da fazenda ocupado pelas unidades
 function unitsPop() {
     barracks_level = Number($("#barracks").val());
     stable_level = Number($("#stable").val());
@@ -1584,7 +1586,7 @@ function unitsPop() {
     return true
 }
 
-// Ã©pÃ¼letenkÃ©nt Ã¶sszegzi az egysÃ©gek kÃ©pzÃ©si idejÃ©t
+// soma o tempo de recrutamento das unidades por edifício
 async function sumBuildTimeOfUnit() {
     var result = await buildTimeOfUnit();
     var seconds = 0;
@@ -1612,7 +1614,7 @@ async function sumBuildTimeOfUnit() {
     }
 }
 
-// a foglalt tanyahelyet szÃ¡molja
+// calcula a população ocupada
 async function lockedPop() {
     var lockedsum = 0;
     buildingpop = $(".popCost");
@@ -1631,7 +1633,7 @@ async function lockedPop() {
     return lockedsum;
 }
 
-// a szabad tanyahelyet szÃ¡molja
+// calcula a população livre
 async function freePop() {
     var res = await popBonus();
     var result = await lockedPop();
@@ -1644,7 +1646,8 @@ async function freePop() {
     $("#free").text(numberWithCommas(free));
 }
 
-// ha a foglalt tanyahely nagyobb, mint a nÃ©pessÃ©g, akkor a foglalt Ã©s a szabad tanyahely szÃ¡ma pirosra vÃ¡lt
+// se a população ocupada for maior que a população disponível,
+// os valores de população ocupada e livre ficam vermelhos
 function redClass() {
     var pop = Number($("#population").text().replace(".",""));
     var locked = Number($("#locked").text().replace(".",""));
@@ -1657,7 +1660,7 @@ function redClass() {
     }
 }
 
-// kereskedÅ‘ bÃ³nuszt szÃ¡molja
+// calcula o bônus de mercadores
 async function marketBonus() {
     var merchants = await numberOfMerchants();
     var merchantsBonusVillage = Number($("#merchantsBonusVillage").val());
@@ -1666,7 +1669,7 @@ async function marketBonus() {
     $("#merchants").text(roundToNearestInteger(bonusMerchants));
 }
 
-// raktÃ¡rkapacitÃ¡s bÃ³nuszt szÃ¡molja
+// calcula o bônus de capacidade do armazém
 async function storageBonus() {
     var storage = await capacity();
     var storageBonusVillage = Number($("#storageBonusVillage").val());
@@ -1675,7 +1678,7 @@ async function storageBonus() {
     $("#capacity").text(numberWithCommas(roundToNearestInteger(bonusStorage)));
 }
 
-// fosztogatÃ¡s bÃ³nuszt szÃ¡molja
+// calcula o bônus de carga
 async function haulBonus() {
     var result = await unitsHaul();
     var haul = $(".haul");
@@ -1688,7 +1691,7 @@ async function haulBonus() {
     }
 }
 
-// nÃ©pessÃ©g bÃ³nuszt szÃ¡molja
+// calcula o bônus de população
 async function popBonus() {
     var result = await population();
     var popBonusVillage = Number($("#popBonusVillage").val());
@@ -1700,7 +1703,7 @@ async function popBonus() {
     return newPop;
 }
 
-// kÃ©pzÃ©si bÃ³nuszt szÃ¡molja
+// calcula o bônus de recrutamento
 function recruitBonus() {
     var barracksBonus = 1 + Number($("#barracksBonus").val()) / 100;
     var stableBonus = 1 + Number($("#stableBonus").val()) / 100;
@@ -1709,7 +1712,7 @@ function recruitBonus() {
     return {barracksBonus, stableBonus, garageBonus, academyBonus}
 }
 
-// termelÃ©s bÃ³nuszt szÃ¡molja
+// calcula o bônus de produção
 async function resourceBonus() {
     var woodBaseProd = await woodProd();
     var stoneBaseProd = await stoneProd();
@@ -1733,7 +1736,7 @@ async function resourceBonus() {
     $("#ironProd").text(numberWithCommas(roundToNearestInteger(bonusIronProduction)));
 }
 
-// az egysÃ©gek kÃ¶ltsÃ©gÃ©t szÃ¡molja
+// calcula os custos das unidades
 function unitsCost() {
     var wood = 0;
     var stone = 0;
@@ -1752,7 +1755,7 @@ function unitsCost() {
     return {wood, stone, iron}
 }
 
-// az Ã©pÃ¼letek kÃ¶ltsÃ©gÃ©t szÃ¡molja
+// calcula os custos dos edifícios
 function buildingsCost() {
     var wood = 0;
     var stone = 0;
@@ -1801,7 +1804,7 @@ function buildingsCost() {
     return {wood, stone, iron}
 }
 
-// az Ã©pÃ¼letek Ã©s az egysÃ©gek kÃ¶ltsÃ©gÃ©t Ã¶sszegzi
+// soma os custos de edifícios e unidades
 async function sumUnitsAndBuildingsCost() {
     var buildings = await buildingsCost();
     currentBuildingsCost();
@@ -1815,7 +1818,7 @@ async function sumUnitsAndBuildingsCost() {
     $("#sumUnitsAndBuildingsIronCost").text(numberWithCommas(Math.round(iron)));
 }
 
-// aktuÃ¡lis Ã©pÃ¼let szintek kÃ¶ltsÃ©gei
+// calcula os custos dos níveis atuais dos edifícios
 function currentBuildingsCost() {
     var woodCost = $(".woodCost");
     var stoneCost = $(".stoneCost");
@@ -1833,7 +1836,7 @@ function currentBuildingsCost() {
     $("#currentBuildingsIronCost").text(numberWithCommas(iron));
 }
 
-// ss Ã¡tvÃ¡ltÃ¡sa nn:Ã³Ã³:pp:ss
+// converte segundos para dd:hh:mm:ss
 function secondsToDhms(seconds) {
     var d = Math.floor(seconds / (3600*24));
     var h = Math.floor(seconds % (3600*24) / 3600);
@@ -1863,7 +1866,7 @@ function roundUpToNearestInteger(number) {
     return Math.ceil(number);
 }
 
-// szÃ¡mok tagolÃ¡sa "."-tal
+// formata números com ponto como separador de milhar
 function numberWithCommas(x) {
     var parts = x.toString().split(".");
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -1871,7 +1874,7 @@ function numberWithCommas(x) {
 }
 
 function byebye() {
-    createMessage("SuccessMessage","ViszlÃ¡t legkÃ¶zelebb!",2000)
+    createMessage("SuccessMessage","Até a próxima!",2000)
 }
 
 function buildingsFunctions() {
@@ -1914,7 +1917,7 @@ $(".gear").find("img").on("click", function(event) {
     spinMainIcon(500, -180);
 })
 
-// Ã©pÃ¼let szint esemÃ©nykezelÅ‘
+// evento de alteração de nível de edifício/unidade/bônus
 $(".building, .unit, .bon").on("keyup input", function(event) {
     var classname = event.target.className;
     var value = event.target.valueAsNumber;
@@ -1927,13 +1930,13 @@ $(".building, .unit, .bon").on("keyup input", function(event) {
     if (regExp.test(val) || value > max || value < min || ((keyCode < 7 || keyCode > 9) && (keyCode < 48 || keyCode > 57) && (keyCode < 96 || keyCode > 105))) {
         event.target.value = "";
         if (classname == "building") {
-            createMessage("ErrorMessage",`Az Ã©pÃ¼letnek nincs ilyen szintje! Minimum: ${min}, Maximum: ${max}`,1500);
+            createMessage("ErrorMessage",`Esse edifício não possui esse nível! Mínimo: ${min}, Máximo: ${max}`,1500);
         }
         if (classname == "unit") {
-            createMessage("ErrorMessage",`HibÃ¡s darabszÃ¡mot adtÃ¡l meg! Minimum: ${min}, Maximum: ${max}`,1500);
+            createMessage("ErrorMessage",`Quantidade inválida! Mínimo: ${min}, Máximo: ${max}`,1500);
         }
         if (classname == "bon") {
-            createMessage("ErrorMessage",`HibÃ¡s Ã©rtÃ©ket adtÃ¡l meg! Minimum: ${min}, Maximum: ${max}`,1500);
+            createMessage("ErrorMessage",`Valor inválido! Mínimo: ${min}, Máximo: ${max}`,1500);
         }
     } else {
         if (classname == "building") {
@@ -1952,8 +1955,7 @@ $(".building, .unit, .bon").on("keyup input", function(event) {
         }
     }
 })
-
-// minimum rÃ¡diÃ³gomb esemÃ©nykezelÅ‘
+// evento do botão de rádio mínimo
 function minimum() {
     for (var i = 0; i < buildings.length; i++) {
         min_level = obj.buildingsObj[buildings[i]].min_level;
@@ -1964,7 +1966,7 @@ function minimum() {
     buildingsAndUnitsFunctions();
 }
 
-// maximum rÃ¡diÃ³gomb esemÃ©nykezelÅ‘
+// evento do botão de rádio máximo
 function maximum() {
     for (var i = 0; i < buildings.length; i++) {
         max_level = obj.buildingsObj[buildings[i]].max_level;
@@ -1975,7 +1977,7 @@ function maximum() {
     buildingsAndUnitsFunctions();
 }
 
-// Ã©pÃ¼letek Ã©s egysÃ©gek elÅ‘feltÃ©teleinek vizsgÃ¡lata
+// verifica os pré-requisitos de edifícios e unidades
 function select() {
     if (buildingsLevel("headquarters",3)) {
         enableBuilding("barracks");
