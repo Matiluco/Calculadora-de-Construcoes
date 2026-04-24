@@ -1,322 +1,2078 @@
-(function () {
-    'use strict';
+javascript:
+var regExp = /^0[0-9].*$/;
+let disableBuildings = [];
+let disableUnits = [];
+let config;
+let buildings = ["main","barracks","stable","garage","church","church_f","watchtower","snob","smith","place","statue","market","wood","stone","iron","farm","storage","hide","wall"];
+let units = ["spear","sword","axe","archer","spy","light","marcher","heavy","ram","catapult","knight","snob","militia"];
+let datas = ["max_level","min_level","wood","stone","iron","pop","wood_factor","stone_factor","iron_factor","pop_factor","build_time","build_time_factor"];
+let dat = ["build_time","pop","speed","attack","defense","defense_cavalry","defense_archer","carry"];
+let firstLevelPoint = [10,16,20,24,10,10,42,512,19,0,24,10,6,6,6,5,6,5,8];
+let forumURL = "https://forum.tribalwars.com.br/index.php?members/mat-legend.106854/";
+let gear = "https://raw.githubusercontent.com/oreg-kh/Unit-and-building-simulator/master/gear.png";
+let token = atob("ZjRiNDIzZWE4MzgxMDJmZmNkMTdmY2M4MDdmY2Y1MTkxZjlkN2I5Yw==");
+const obj = {buildingsObj: {}, unitsObj: {}, world: {}};
+let errorText = {
+    buildings: "Falha ao buscar os dados dos edifícios no servidor. Tente novamente mais tarde.",
+    units: "Falha ao buscar os dados das unidades no servidor. Tente novamente mais tarde.",
+    unitsCost: "Falha ao buscar os custos de recursos das unidades no servidor. Tente novamente mais tarde.",
+    speed: "Falha ao buscar a velocidade do servidor. Tente novamente mais tarde."
+};
+let prompts = {
+    text: [`Este código pode ser usado na importação.`,
+           `\n`,
+           `\n`,
+           `Com ele você pode salvar seu perfil ou enviá-lo para outra pessoa.`,
+           `\n`,
+           `Copiar para a área de transferência: CTRL+C.`].join('')
+};
+let helpTooltip = {
+    resource: [`Bônus de recursos:`,
+               `<br/>`,
+               `<br/>`,
+               ` :: Aqui você pode definir em quantos por cento a produção de madeira, argila e ferro está aumentada.`].join(''),
+    pop: [`Bônus de população:`,
+               `<br/>`,
+               `<br/>`,
+               ` :: Aqui você pode definir em quantos por cento a capacidade da fazenda está aumentada.`,
+               ` :: É possível configurar separadamente aldeia bônus, bandeira e inventário.`].join(''),
+    haul: [`Bônus de carga:`,
+               `<br/>`,
+               `<br/>`,
+               ` :: Aqui você pode definir em quantos por cento a capacidade de transporte das unidades está aumentada.`,
+               ` :: É possível configurar separadamente bandeira e inventário.`].join(''),
+    recruit: [`Bônus de recrutamento:`,
+               `<br/>`,
+               `<br/>`,
+               ` :: Aqui você pode definir em quantos por cento a velocidade de recrutamento do quartel, estábulo, oficina e academia está aumentada.`].join(''),
+    market: [`Bônus de mercado:`,
+               `<br/>`,
+               `<br/>`,
+               ` :: Aqui você pode definir em quantos por cento o número de mercadores está aumentado.`,
+               ` :: É possível configurar separadamente aldeia bônus e inventário.`].join(''),
+    storage: [`Bônus de armazém:`,
+               `<br/>`,
+               `<br/>`,
+               ` :: Aqui você pode definir em quantos por cento a capacidade do armazém está aumentada.`,
+               ` :: É possível configurar separadamente aldeia bônus e inventário.`].join('')
+}
+let game = window.image_base;
+let imageSrc = {
+        main: game + "buildings/mid/main3.png",
+        barracks: game + "buildings/mid/barracks3.png",
+        stable: game + "buildings/mid/stable3.png",
+        garage: game + "buildings/mid/garage3.png",
+        church: game + "buildings/mid/church3.png",
+        church_f: game + "buildings/mid/church1.png",
+        watchtower: game + "buildings/mid/watchtower3.png",
+        academy: game + "buildings/mid/snob1.png",
+        smith: game + "buildings/mid/smith3.png",
+        place: game + "buildings/mid/place1.png",
+        statue: game + "buildings/mid/statue1.png",
+        market: game + "buildings/mid/market3.png",
+        timber_camp: game + "buildings/mid/wood3.png",
+        clay_pit: game + "buildings/mid/stone3.png",
+        iron_mine: game + "buildings/mid/iron3.png",
+        farm: game + "buildings/mid/farm3.png",
+        warehouse: game + "buildings/mid/storage3.png",
+        hide: game + "buildings/mid/hide1.png",
+        wall: game + "buildings/mid/wall3.png",
+        spear: game + "unit/unit_spear.png",
+        sword: game + "unit/unit_sword.png",
+        axe: game + "unit/unit_axe.png",
+        archer: game + "unit/unit_archer.png",
+        spy: game + "unit/unit_spy.png",
+        light: game + "unit/unit_light.png",
+        marcher: game + "unit/unit_marcher.png",
+        heavy: game + "unit/unit_heavy.png",
+        ram: game + "unit/unit_ram.png",
+        catapult: game + "unit/unit_catapult.png",
+        knight: game + "unit/unit_knight.png",
+        snob: game + "unit/unit_snob.png",
+        militia: game + "unit/unit_militia.png",
+        wood: game + "holz.png",
+        stone: game + "lehm.png",
+        iron: game + "eisen.png",
+        header: game + "face.png",
+        gold: game + "gold.png",
+        popFlag: game + "flags/medium/6_5.png",
+        haulFlag: game + "flags/medium/8_5.png",
+        inventory: game + "icons/inventory.png",
+        bonusVillage: game + "/map_new/b1.png",
+        questionMark: game + "questionmark.png",
+        time: game + "time.png"
+};
 
-    const APP_ID = 'kiara-simulador';
-    const STYLE_ID = 'kiara-simulador-style';
-    const VERSION = '2.0.0';
+content = `
+    <div id="myTable">
+        <div style="float: left;margin-right:10px">
+            <table class="inlineTable modes">
+		        <tbody>
+			        <tr>
+				        <th>Edifício</th>
+				        <th>Nível</th>
+				        <th>Madeira</th>
+				        <th>Argila</th>
+				        <th>Ferro</th>
+				        <th>População</th>
+				        <th>Pontos</th>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.main}>Edifício principal</td>
+				        <td><input type="number" id="headquarters" class="building" maxlength="2" min="1" max="30" autofocus></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.barracks}>Quartel</td>
+				        <td><input type="number" id="barracks" class="building" maxlength="2" min="0" max="25"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.stable}>Estábulo</td>
+				        <td><input type="number" id="stable" class="building" maxlength="2" min="0" max="20"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+                    		</tr>
+			        <tr>
+				        <td><img src=${imageSrc.garage}>Oficina</td>
+				        <td><input type="number" id="garage" class="building" maxlength="2" min="0" max="15"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.church}>Igreja</td>
+				        <td><input type="number" id="church" class="building" maxlength="1" min="0" max="3"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.church_f}>Primeira igreja</td>
+				        <td><input type="number" id="church_f" class="building" maxlength="1" min="0" max="1"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.watchtower}>Torre de vigia</td>
+				        <td><input type="number" id="watchtower" class="building" maxlength="2" min="0" max="20"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+                    		<tr>
+				        <td><img src=${imageSrc.academy}>Academia</td>
+				        <td><input type="number" id="academy" class="building" maxlength="1" min="0" max="1"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+                    		</tr>
+			        <tr>
+				        <td><img src=${imageSrc.smith}>Ferreiro</td>
+				        <td><input type="number" id="smith" class="building" maxlength="2" min="0" max="20"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.place}>Praça de reunião</td>
+				        <td><input type="number" id="place" class="building" maxlength="1" min="0" max="1"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.statue}>Estátua</td>
+				        <td><input type="number" id="statue" class="building" maxlength="1" min="0" max="1"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.market}>Mercado</td>
+				        <td><input type="number" id="market" class="building" maxlength="2" min="0" max="25"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.timber_camp}>Bosque</td>
+				        <td><input type="number" id="timber_camp" class="building" maxlength="2" min="0" max="30"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.clay_pit}>Poço de argila</td>
+				        <td><input type="number" id="clay_pit" class="building" maxlength="2" min="0" max="30"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.iron_mine}>Mina de ferro</td>
+				        <td><input type="number" id="iron_mine" class="building" maxlength="2" min="0" max="30"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.farm}>Fazenda</td>
+				        <td><input type="number" id="farm" class="building" maxlength="2" min="1" max="30"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.warehouse}>Armazém</td>
+				        <td><input type="number" id="warehouse" class="building" maxlength="2" min="1" max="30"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.hide}>Esconderijo</td>
+				        <td><input type="number" id="hide" class="building" maxlength="2" min="0" max="10"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.wall}>Muralha</td>
+				        <td><input type="number" id="wall" class="building" maxlength="2" min="0" max="20"></td>
+				        <td class="woodCost">0</td>
+				        <td class="stoneCost">0</td>
+				        <td class="ironCost">0</td>
+				        <td class="popCost">0</td>
+				        <td class="points">0</td>
+			        </tr>
+			        <tr>
+				        <td></td>
+				        <td style="text-align:center">&#8679</td>
+				        <td><img src=${imageSrc.wood}>&nbsp<span id="currentBuildingsWoodCost">0</span></td>
+				        <td><img src=${imageSrc.stone}>&nbsp<span id="currentBuildingsStoneCost">0</span></td>
+				        <td><img src=${imageSrc.iron}>&nbsp<span id="currentBuildingsIronCost">0</span></td>
+				        <td class="crosshatchedright" colspan="2">&#x21E6; Custos dos níveis atuais</td>
+			        </tr>
+			        <tr>
+				        <td class="crosshatchedleft">Nível mínimo:</td>
+				        <td style="text-align:center"><input type="radio" id="minimum" onclick="minimum()" name="name"></td>
+			        </tr>
+			        <tr>
+				        <td class="crosshatchedright">Nível máximo:</td>
+				        <td style="text-align:center"><input type="radio" id="maximum" onclick="maximum()" name="name"></td>
+			        </tr>
+		        </tbody>
+	        </table>
+        </div>
+                <div style="float: left;margin-right:10px">
+	        <table class="inlineTable">
+		        <tbody>
+			        <tr>
+				        <th>Unidade</th>
+				        <th>Quantidade</th>
+				        <th>Tempo de recrutamento</th>
+				        <th>Total por edifício</th>
+				        <th>Capacidade de carga</th>
+				        <th>Espaço na fazenda</th>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.spear}>Lanceiro</td>
+				        <td><input type="number" id="spear" class="unit" maxlength="5" min="0" max="32000"></td>
+				        <td>
+                            <span>
+                                <span class="icon header time"></span>
+                                <span class="build_time">00:00:00:00</span>
+                            </span>
+                        </td>
+				        <td class="sumbuildtime" rowspan="4">00:00:00:00</td>
+				        <td class="haul">0</td>
+				        <td class="pop">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.sword}>Espadachim</td>
+				        <td><input type="number" id="sword" class="unit" maxlength="5" min="0" max="32000"></td>
+				        <td>
+                            <span>
+                                <span class="icon header time"></span>
+                                <span class="build_time">00:00:00:00</span>
+                            </span>
+                        </td>
+				        <td class="haul">0</td>
+				        <td class="pop">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.axe}>Bárbaro</td>
+				        <td><input type="number" id="axe" class="unit" maxlength="5" min="0" max="32000"></td>
+				        <td>
+                            <span>
+                                <span class="icon header time"></span>
+                                <span class="build_time">00:00:00:00</span>
+                            </span>
+                        </td>
+				        <td class="haul">0</td>
+				        <td class="pop">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.archer}>Arqueiro</td>
+				        <td><input type="number" id="archer" class="unit" maxlength="5" min="0" max="32000"></td>
+				        <td>
+                            <span>
+                                <span class="icon header time"></span>
+                                <span class="build_time">00:00:00:00</span>
+                            </span>
+                        </td>
+				        <td class="haul">0</td>
+				        <td class="pop">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.spy}>Espião</td>
+				        <td><input type="number" id="spy" class="unit" maxlength="5" min="0" max="32000"></td>
+				        <td>
+                            <span>
+                                <span class="icon header time"></span>
+                                <span class="build_time">00:00:00:00</span>
+                            </span>
+                        </td>
+                        <td class="sumbuildtime" rowspan="4">00:00:00:00</td>
+				        <td class="haul">0</td>
+				        <td class="pop">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.light}>Cavalaria leve</td>
+				        <td><input type="number" id="light" class="unit" maxlength="5" min="0" max="32000"></td>
+				        <td>
+                            <span>
+                                <span class="icon header time"></span>
+                                <span class="build_time">00:00:00:00</span>
+                            </span>
+                        </td>
+				        <td class="haul">0</td>
+				        <td class="pop">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.marcher}>Arqueiro montado</td>
+				        <td><input type="number" id="marcher" class="unit" maxlength="5" min="0" max="32000"></td>
+				        <td>
+                            <span>
+                                <span class="icon header time"></span>
+                                <span class="build_time">00:00:00:00</span>
+                            </span>
+                        </td>
+				        <td class="haul">0</td>
+				        <td class="pop">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.heavy}>Cavalaria pesada</td>
+				        <td><input type="number" id="heavy" class="unit" maxlength="5" min="0" max="32000"></td>
+				        <td>
+                            <span>
+                                <span class="icon header time"></span>
+                                <span class="build_time">00:00:00:00</span>
+                            </span>
+                        </td>
+				        <td class="haul">0</td>
+				        <td class="pop">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.ram}>Ariete</td>
+				        <td><input type="number" id="ram" class="unit" maxlength="5" min="0" max="32000"></td>
+				        <td>
+                            <span>
+                                <span class="icon header time"></span>
+                                <span class="build_time">00:00:00:00</span>
+                            </span>
+                        </td>
+				        <td class="sumbuildtime" rowspan="2">00:00:00:00</td>
+				        <td class="haul">0</td>
+				        <td class="pop">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.catapult}>Catapulta</td>
+				        <td><input type="number" id="catapult" class="unit" maxlength="5" min="0" max="32000"></td>
+				        <td>
+                            <span>
+                                <span class="icon header time"></span>
+                                <span class="build_time">00:00:00:00</span>
+                            </span>
+                        </td>
+				        <td class="haul">0</td>
+				        <td class="pop">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.knight}>Paladino</td>
+				        <td><input type="number" id="knight" class="unit" maxlength="5" min="0" max="32000"></td>
+				        <td>
+                            <span>
+                                <span class="icon header time"></span>
+                                <span class="build_time">00:00:00:00</span>
+                            </span>
+                        </td>
+				        <td class="crosshatchedright"></td>
+				        <td class="haul">0</td>
+				        <td class="pop">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.snob}>Nobre</td>
+				        <td><input type="number" id="snob" class="unit" maxlength="5" min="0" max="32000"></td>
+				        <td>
+                            <span>
+                                <span class="icon header time"></span>
+                                <span class="build_time">00:00:00:00</span>
+                            </span>
+                        </td>
+				        <td class="crosshatchedright"></td>
+				        <td class="haul">0</td>
+				        <td class="pop">0</td>
+			        </tr>
+			        <tr class="spaceUnder">
+				        <td><img src=${imageSrc.militia}>Milícia</td>
+				        <td><input type="number" id="militia" class="unit" maxlength="5" min="0" max="32000"></td>
+				        <td>
+                            <span>
+                                <span class="icon header time"></span>
+                                <span class="build_time">00:00:00:00</span>
+                            </span>
+                        </td>
+				        <td class="crosshatchedright"></td>
+				        <td class="haul">0</td>
+				        <td class="pop">0</td>
+			        </tr>
+                    <tr class="separator" />
+		        </tbody>
+            </table>
+                       <table class="inlineTable bonus">
+                <tbody>
+			        <tr>
+                        <th colspan="3">Bônus de recursos<img src=${imageSrc.questionMark} title="${helpTooltip.resource}" class="tooltip"></th>
+                        <th class="space"></th>
+                        <th colspan="3">Bônus de população<img src=${imageSrc.questionMark} title="${helpTooltip.pop}" class="tooltip"></th>
+                        <th class="space"></th>
+                        <th colspan="2">Bônus de carga<img src=${imageSrc.questionMark} title="${helpTooltip.haul}" class="tooltip"></th>
+                    </tr>
+			        <tr>
+				        <td><img src=${imageSrc.timber_camp}><input class="bon" id="woodBonus" type="number" min="0" max="500" value="0"></td>
+				        <td><img src=${imageSrc.clay_pit}><input class="bon" id="stoneBonus" type="number" min="0" max="500" value="0"></td>
+				        <td><img src=${imageSrc.iron_mine}><input class="bon" id="ironBonus" type="number" min="0" max="500" value="0"></td>
+                        <td class="space"></td>
+				        <td><img src=${imageSrc.bonusVillage}><input class="bon" id="popBonusVillage" type="number" min="0" max="500" value="0"></td>
+				        <td><img src=${imageSrc.popFlag}><input class="bon" id="popFlag" type="number" min="0" max="500" value="0"></td>
+				        <td><img src=${imageSrc.inventory}><input class="bon" id="popInventory" type="number" min="0" max="500" value="0"></td>
+                        <td class="space"></td>
+				        <td><img src=${imageSrc.haulFlag}><input class="bon" id="haulFlag" type="number" min="0" max="300" value="0"></td>
+				        <td><img src=${imageSrc.inventory}><input class="bon" id="haulInventory" type="number" min="0" max="500" value="0"></td>
+                    </tr>
+                    <tr class="separator" />
+		        </tbody>
+            </table>
+            <table class="inlineTable bonus">
+                <tbody>
+                    <tr>
+                        <th colspan="4">Bônus de recrutamento<img src=${imageSrc.questionMark} title="${helpTooltip.recruit}" class="tooltip"></th>
+                        <th class="space"></th>
+                        <th colspan="2">Bônus de mercado<img src=${imageSrc.questionMark} title="${helpTooltip.market}" class="tooltip"></th>
+                        <th class="space"></th>
+                        <th colspan="2">Bônus de armazém<img src=${imageSrc.questionMark} title="${helpTooltip.storage}" class="tooltip"></th>
+                    </tr>
+                    <tr>
+				        <td><img src=${imageSrc.barracks}><input class="bon" id="barracksBonus" type="number" min="0" max="500" value="0"></td>
+				        <td><img src=${imageSrc.stable}><input class="bon" id="stableBonus" type="number" min="0" max="500" value="0"></td>
+				        <td><img src=${imageSrc.garage}><input class="bon" id="garageBonus" type="number" min="0" max="500" value="0"></td>
+				        <td><img src=${imageSrc.academy}><input class="bon" id="academyBonus" type="number" min="0" max="500" value="0"></td>
+                        <td class="space"></td>
+				        <td><img src=${imageSrc.bonusVillage}><input class="bon" id="merchantsBonusVillage" type="number" min="0" max="500" value="0"></td>
+				        <td><img src=${imageSrc.inventory}><input class="bon" id="merchantsInventory" type="number" min="0" max="500" value="0"></td>
+                        <td class="space"></td>
+				        <td><img src=${imageSrc.bonusVillage}><input class="bon" id="storageBonusVillage" type="number" min="0" max="500" value="0"></td>
+				        <td><img src=${imageSrc.inventory}><input class="bon" id="storageInventory" type="number" min="0" max="500" value="0"></td>
+			        </tr>
+                    <tr class="separator" />
+		        </tbody>
+            </table>
+            <table class="inlineTable border">
+                <tbody>
+                    <tr>
+                        <td>
+                            <label for="sablon">Perfis: </label>
+                            <select id="sablon">
+                                <option selected hidden>opções</option>
+                            </select>
+                            &nbsp;
+                            <input type="button" value="Salvar" onclick="store()">
+                            &nbsp;
+                            <input type="button" value="Excluir" onclick="removeOptions()">
+                            &nbsp;
+                            <input type="button" value="Exportar" onclick="exports()">
+                            &nbsp;
+                            <input type="button" value="Importar" onclick="imports()">
+                            <b><code>Criado por <a href="${forumURL}" target="_blank">Mat-Legend</a></code></b>
+                        </td>
+                    </tr>
+		        </tbody>
+            </table>
+        </div>
+        <div style="float: left;margin-right:10px">
+	        <table class="inlineTable modesb">
+		        <tbody>
+			        <tr>
+				        <th colspan="2">Propriedades dos edifícios</th>
+			        </tr>
+			        <tr>
+				        <td style="width: 50%"><img src=${imageSrc.header}>Capacidade da fazenda</td>
+				        <td class="property" id="population" style="width: 50%">0</td>
+			        </tr>
+			        <tr>
+				        <td style="width: 50%"><img src=${imageSrc.header}>População ocupada</td>
+				        <td class="property" id="locked" style="width: 50%">0</td>
+			        </tr>
+			        <tr>
+				        <td style="width: 50%"><img src=${imageSrc.header}>População livre</td>
+				        <td class="property" id="free" style="width: 50%">0</td>
+			        </tr>
+			        <tr>
+				        <td style="width: 50%"><img src=${imageSrc.gold}>Pontos</td>
+				        <td class="property" id="sumPoints" style="width: 50%">0</td>
+			        </tr>
+			        <tr>
+				        <td style="width: 50%"><img src=${imageSrc.hide}>Recursos escondidos</td>
+				        <td class="property" id="hiddenResources" style="width: 50%">0</td>
+			        </tr>
+			        <tr>
+				        <td style="width: 50%"><img src=${imageSrc.market}>Número de mercadores</td>
+				        <td class="property" id="merchants" style="width: 50%">0</td>
+			        </tr>
+			        <tr>
+				        <td style="width: 50%"><img src=${imageSrc.warehouse}>Capacidade do armazém</td>
+				        <td class="property" id="capacity" style="width: 50%">0</td>
+			        </tr>
+			        <tr>
+				        <td style="width: 50%"><img src=${imageSrc.wall}>Bônus defensivo da muralha</td>
+				        <td class="property" id="wallBonus" style="width: 50%">0</td>
+			        </tr>
+			        <tr>
+				        <td style="width: 50%"><img src=${imageSrc.timber_camp}>Produção de madeira</td>
+				        <td class="property" id="woodProd" style="width: 50%">0</td>
+			        </tr>
+			        <tr>
+				        <td style="width: 50%"><img src=${imageSrc.clay_pit}>Produção de argila</td>
+				        <td class="property" id="stoneProd" style="width: 50%">0</td>
+			        </tr>
+			        <tr>
+				        <td style="width: 50%"><img src=${imageSrc.iron_mine}>Produção de ferro</td>
+				        <td class="property" id="ironProd" style="width: 50%">0</td>
+			        </tr>
+                    <tr class="separator" />
+		        </tbody>
+	        </table>
+                        <table class="inlineTable modesc">
+                <tbody>
+			        <tr>
+				        <th colspan="6">Custos</th>
+			        </tr>
+			        <tr>
+				        <td>Unidades</td>
+				        <td></td>
+				        <td>Edifícios</td>
+				        <td></td>
+				        <td>Total</td>
+				        <td></td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.wood}></td>
+				        <td id="unitsWoodCost">0</td>
+				        <td><img src=${imageSrc.wood}></td>
+				        <td id="buildingsWoodCost">0</td>
+				        <td><img src=${imageSrc.wood}></td>
+				        <td id="sumUnitsAndBuildingsWoodCost">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.stone}></td>
+				        <td id="unitsStoneCost">0</td>
+				        <td><img src=${imageSrc.stone}></td>
+				        <td id="buildingsStoneCost">0</td>
+				        <td><img src=${imageSrc.stone}></td>
+				        <td id="sumUnitsAndBuildingsStoneCost">0</td>
+			        </tr>
+			        <tr>
+				        <td><img src=${imageSrc.iron}></td>
+				        <td id="unitsIronCost">0</td>
+				        <td><img src=${imageSrc.iron}></td>
+				        <td id="buildingsIronCost">0</td>
+				        <td><img src=${imageSrc.iron}></td>
+				        <td id="sumUnitsAndBuildingsIronCost">0</td>
+			        </tr>
+		        </tbody>
+            </table>
+        </div>
+    </div>
+`;
 
-    document.getElementById(APP_ID)?.remove();
-    document.getElementById(STYLE_ID)?.remove();
+let player = game_data.player.name;
+let world = game_data.world;
+let script = {
+    name: "Simulador de unidades e edifícios",
+    version: "v1.5"
+}
+let issue = {
+    text: ["|Player|World|Script name|Script version|",
+           "|---|---|---|---|",
+           `|${player}|${world}|${script.name}|${script.version}|`,
+           "",
+           "Issue:"].join("\n")
+};
 
-    const WORLD_SPEED = Number(window.game_data?.speed) || 1;
-    const CURRENT_BUILDINGS = window.game_data?.village?.buildings || {};
+function sendMessage() {
+    createIssue("Hibabejelentesek","oreg-kh","hiba/Ã©szrevÃ©tel",issue.text,token)
+}
 
-    const BUILDINGS = {
-        main: { name: 'Edificio Principal', max: 30, pop: 5, wood: 90, stone: 80, iron: 70, factor: 1.26 },
-        barracks: { name: 'Quartel', max: 25, pop: 7, wood: 200, stone: 170, iron: 90, factor: 1.28 },
-        stable: { name: 'Estabulo', max: 20, pop: 8, wood: 270, stone: 240, iron: 260, factor: 1.28 },
-        garage: { name: 'Oficina', max: 15, pop: 8, wood: 300, stone: 240, iron: 260, factor: 1.28 },
-        smith: { name: 'Ferreiro', max: 20, pop: 20, wood: 220, stone: 180, iron: 240, factor: 1.28 },
-        market: { name: 'Mercado', max: 25, pop: 20, wood: 100, stone: 100, iron: 100, factor: 1.28 },
-        wood: { name: 'Bosque', max: 30, pop: 5, wood: 50, stone: 60, iron: 40, factor: 1.25 },
-        stone: { name: 'Poco de Argila', max: 30, pop: 10, wood: 65, stone: 50, iron: 40, factor: 1.27 },
-        iron: { name: 'Mina de Ferro', max: 30, pop: 10, wood: 75, stone: 65, iron: 70, factor: 1.26 },
-        farm: { name: 'Fazenda', max: 30, pop: 0, wood: 45, stone: 40, iron: 30, factor: 1.3 },
-        storage: { name: 'Armazem', max: 30, pop: 0, wood: 60, stone: 50, iron: 40, factor: 1.265 },
-        hide: { name: 'Esconderijo', max: 10, pop: 2, wood: 50, stone: 60, iron: 50, factor: 1.25 },
-        wall: { name: 'Muralha', max: 20, pop: 5, wood: 50, stone: 100, iron: 20, factor: 1.26 },
-        watchtower: { name: 'Torre de Vigia', max: 20, pop: 500, wood: 12000, stone: 14000, iron: 10000, factor: 1.17 }
-    };
+sideBarHTML = `
+    <div class="gear" onclick="openNav()"><img src=${gear}></div>
+    <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <textarea id="issueText" placeholder="Descreva o problema..." rows="10" cols="50"></textarea>
+        <button id="sendIssue" type="button" onclick="sendMessage()">Enviar</button>
+        </br>
+        <textarea id="imageURL" placeholder="Link da imagem" rows="1" cols="50"></textarea>
+        <button id="addURL" type="button" onclick="addURL()">Adicionar</button>
+    </div>
+`;
 
-    const UNITS = {
-        spear: { name: 'Lanceiro', wood: 50, stone: 30, iron: 10, pop: 1 },
-        sword: { name: 'Espadachim', wood: 30, stone: 30, iron: 70, pop: 1 },
-        axe: { name: 'Machado', wood: 60, stone: 30, iron: 40, pop: 1 },
-        archer: { name: 'Arqueiro', wood: 100, stone: 30, iron: 60, pop: 1 },
-        spy: { name: 'Explorador', wood: 50, stone: 50, iron: 20, pop: 2 },
-        light: { name: 'Cavalaria Leve', wood: 125, stone: 100, iron: 250, pop: 4 },
-        marcher: { name: 'Arqueiro a Cavalo', wood: 250, stone: 100, iron: 150, pop: 5 },
-        heavy: { name: 'Cavalaria Pesada', wood: 200, stone: 150, iron: 600, pop: 6 },
-        ram: { name: 'Ariete', wood: 300, stone: 200, iron: 200, pop: 5 },
-        catapult: { name: 'Catapulta', wood: 320, stone: 400, iron: 100, pop: 8 },
-        knight: { name: 'Paladino', wood: 20, stone: 20, iron: 40, pop: 10 },
-        snob: { name: 'Nobre', wood: 40000, stone: 50000, iron: 50000, pop: 100 }
-    };
+function addURL() {
+    var issueText = $("#issueText");
+    var imageURL = $("#imageURL").val();
+    issueText.val(issueText.val() + addBBcodeToURL(imageURL));
+    clearURL();
+}
 
-    const state = {
-        buildings: {},
-        units: {},
-        activeTab: 'buildings'
-    };
+function clearURL() {
+    $("#imageURL").val("");
+}
 
-    Object.keys(BUILDINGS).forEach((id) => {
-        const current = clampInt(CURRENT_BUILDINGS[id], 0, BUILDINGS[id].max);
-        state.buildings[id] = { current, target: Math.min(BUILDINGS[id].max, current + 1) };
-    });
-    Object.keys(UNITS).forEach((id) => {
-        state.units[id] = 0;
-    });
+function addBBcodeToURL(url) {
+   return `![issue-image](${url})`;
+}
 
-    function clampInt(value, min, max) {
-        const parsed = Math.floor(Number(String(value ?? '').replace(/[^\d-]/g, '')));
-        if (!Number.isFinite(parsed)) return min;
-        return Math.min(max, Math.max(min, parsed));
+function createIssue(repoName, repoOwner, issueTitle, issueBody, accessToken) {
+    var url = "https://api.github.com/repos/" + repoOwner + "/" + repoName + "/issues";
+    var text = $("#issueText").val();
+    $.ajax({
+        url: url,
+        type: "POST",
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader("Authorization", "token " + accessToken);
+        },
+        data: JSON.stringify({
+            title: issueTitle, 
+            body: issueBody + "\n" + text
+        }),
+        success: function(msg){
+            UI.SuccessMessage("Sua mensagem foi enviada com sucesso!", 5000);
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            UI.ErrorMessage("Algo deu errado. Não foi possível enviar os dados!", 5000);
+        }
+    })
+}
+
+function createSideBar() {
+    $("body").append(sideBarHTML);
+}
+
+function openNav() {
+    document.getElementById("mySidenav").style.width = "390px";
+}
+
+function closeNav() {
+    spinMainIcon(500, 180);
+    document.getElementById("mySidenav").style.width = "0px";
+}
+
+function createHTML() {
+    Dialog.show("calculator", content, function() {
+        byebye()
+    }),
+    createSideBar()
+    buildingsInformation()
+    unitsInformation()
+    configInformation()
+    loadSelectMenu()
+}
+createHTML()
+
+function createObject() {
+    for (const key of buildings) {
+        obj.buildingsObj[key] = new Object;
+    }
+    for (const key of units) {
+        obj.unitsObj[key] = new Object;
+    }
+    return true;
+}
+
+function getStorage(name) {
+    return localStorage[`${name} ${game_data.world}`];
+}
+
+function setTimeInStorage(name) {
+    localStorage.setItem(`${name} ${game_data.world}`, Date.now());
+}
+
+function setServerDataInStorage(name, value) {
+    localStorage.setItem(`${name} ${game_data.world}`, JSON.stringify(value));
+}
+
+function parseData(name) {
+    return new DOMParser().parseFromString(getStorage(name), 'text/html');
+}
+
+// Ã©pÃ¼letinformÃ¡ciÃ³k lekÃ©rdezÃ©se, Ã³rÃ¡nkÃ©nt max 1x
+function getBuildingsInformation() {
+		return setServerDataInStorage("buildingsConfig", $.ajax({
+			url: `https://${document.domain}/interface.php?func=get_building_info`,
+			type: 'GET',
+			async: false,
+			success: function(xml) {},
+			error: function(xhr, statusText, error) {
+				$(".popup_box_container").remove();
+				console.log(errorText.buildings + error);
+				UI.ErrorMessage(errorText.buildings + error,8000);
+			}
+		}))
+}
+
+async function buildingsInformation() {
+    await createObject();
+    if (!getStorage("buildingsTimeUpdate") || Date.now() > getStorage("buildingsTimeUpdate") + 3600 * 1000) {
+        await getBuildingsInformation();
+        setTimeInStorage("buildingsTimeUpdate");
     }
 
-    function costForLevel(def, level) {
-        return {
-            wood: Math.round(def.wood * Math.pow(def.factor, level - 1)),
-            stone: Math.round(def.stone * Math.pow(def.factor, level - 1)),
-            iron: Math.round(def.iron * Math.pow(def.factor, level - 1)),
-            pop: Math.round(def.pop * Math.pow(1.17, level - 1))
-        };
-    }
-
-    function emptyTotal() {
-        return { wood: 0, stone: 0, iron: 0, pop: 0 };
-    }
-
-    function addToTotal(total, cost, multiplier = 1) {
-        total.wood += cost.wood * multiplier;
-        total.stone += cost.stone * multiplier;
-        total.iron += cost.iron * multiplier;
-        total.pop += cost.pop * multiplier;
-    }
-
-    function getBuildingTotal() {
-        const total = emptyTotal();
-        Object.entries(state.buildings).forEach(([id, levels]) => {
-            const def = BUILDINGS[id];
-            const from = clampInt(levels.current, 0, def.max);
-            const to = clampInt(levels.target, 0, def.max);
-            if (to <= from) return;
-            for (let level = from + 1; level <= to; level += 1) {
-                addToTotal(total, costForLevel(def, level));
+    for (var i = 0; i < buildings.length; i++) {
+        for (var k = 0; k < datas.length; k++) {
+			data = parseData("buildingsConfig");
+            if ($(data).find(`config > ${buildings[i]}`).length > 0) {
+                config = Number($(data).find(`config > ${buildings[i]} > ${datas[k]}`)[0].innerHTML);
+                Object.defineProperty(obj.buildingsObj[buildings[i]], datas[k], {value:config});
+                Object.defineProperty(obj.buildingsObj[buildings[i]], "exist", {value:true});
+            } else {
+                disableBuilding(buildings[i]);
+                Object.defineProperty(obj.buildingsObj[buildings[i]], "exist", {value:false});
+                if (buildings[i] == "statue") {
+                    disableUnit("knight");
+                }
             }
-        });
-        return total;
-    }
-
-    function getUnitTotal() {
-        const total = emptyTotal();
-        Object.entries(state.units).forEach(([id, amount]) => {
-            const qty = clampInt(amount, 0, 999999);
-            if (!qty) return;
-            addToTotal(total, UNITS[id], qty);
-        });
-        return total;
-    }
-
-    function formatNumber(value) {
-        return Math.round(value).toLocaleString('pt-BR');
-    }
-
-    function sumTotal() {
-        const buildings = getBuildingTotal();
-        const units = getUnitTotal();
-        return {
-            wood: buildings.wood + units.wood,
-            stone: buildings.stone + units.stone,
-            iron: buildings.iron + units.iron,
-            pop: buildings.pop + units.pop
-        };
-    }
-
-    function injectStyles() {
-        const css = `
-            #${APP_ID}{position:fixed;top:80px;left:50%;transform:translateX(-50%);width:min(920px,calc(100vw - 24px));max-height:82vh;z-index:999999;background:#f4e4bc;border:2px solid #7d510f;border-radius:6px;box-shadow:0 8px 28px rgba(0,0,0,.45);font-family:Verdana,Arial,sans-serif;color:#2f2212;overflow:hidden}
-            #${APP_ID} *{box-sizing:border-box}
-            .ks-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:#7d510f;color:#fff}
-            .ks-title{font-size:14px;font-weight:700}
-            .ks-version{font-size:11px;opacity:.85}
-            .ks-close{width:28px;height:28px;border:1px solid rgba(255,255,255,.45);border-radius:4px;background:#5f3d0a;color:#fff;font-weight:700;cursor:pointer}
-            .ks-tabs{display:flex;gap:6px;padding:8px 10px;background:#e6cf9c;border-bottom:1px solid #b49355}
-            .ks-tab{border:1px solid #9b7b4d;border-radius:4px;background:#f7f0d8;color:#3b2a14;padding:7px 10px;font-weight:700;cursor:pointer}
-            .ks-tab.active{background:#8b5a2b;color:#fff}
-            .ks-body{padding:10px;overflow:auto;max-height:calc(82vh - 112px)}
-            .ks-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
-            .ks-btn{border:1px solid #7d510f;border-radius:4px;background:#8b5a2b;color:#fff;padding:7px 10px;font-weight:700;cursor:pointer}
-            .ks-btn.secondary{background:#f7f0d8;color:#3b2a14}
-            .ks-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px}
-            .ks-row{display:grid;grid-template-columns:1fr 72px 72px;gap:6px;align-items:center;padding:7px;background:#fff8df;border:1px solid #d5b876;border-radius:4px}
-            .ks-row.unit{grid-template-columns:1fr 90px}
-            .ks-name{font-weight:700;min-width:0}
-            .ks-sub{font-size:11px;color:#6a5330;margin-top:2px}
-            .ks-input{width:100%;height:30px;border:1px solid #a88d57;border-radius:4px;background:#fff;padding:4px 6px;text-align:center}
-            .ks-summary{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:8px;margin:10px 0}
-            .ks-card{background:#fff8df;border:1px solid #d5b876;border-radius:4px;padding:10px}
-            .ks-card strong{display:block;font-size:12px;color:#6a3000;margin-bottom:4px}
-            .ks-card span{font-size:18px;font-weight:700}
-            .ks-note{font-size:11px;color:#614b2c;line-height:1.35;margin-top:8px}
-            @media (max-width:620px){#${APP_ID}{top:54px}.ks-row{grid-template-columns:1fr 58px 58px}.ks-summary{grid-template-columns:repeat(2,1fr)}.ks-tab,.ks-btn{padding:7px 8px}}
-        `;
-        const style = document.createElement('style');
-        style.id = STYLE_ID;
-        style.textContent = css;
-        document.head.appendChild(style);
-    }
-
-    function createShell() {
-        const root = document.createElement('div');
-        root.id = APP_ID;
-        root.innerHTML = `
-            <div class="ks-head">
-                <div>
-                    <div class="ks-title">Simulador de Construcoes e Tropas</div>
-                    <div class="ks-version">KIARA v${VERSION} | velocidade do mundo: ${formatNumber(WORLD_SPEED)}x</div>
-                </div>
-                <button class="ks-close" type="button" data-action="close">X</button>
-            </div>
-            <div class="ks-tabs">
-                <button class="ks-tab active" type="button" data-tab="buildings">Construcoes</button>
-                <button class="ks-tab" type="button" data-tab="units">Tropas</button>
-                <button class="ks-tab" type="button" data-tab="summary">Resumo</button>
-            </div>
-            <div class="ks-body"></div>
-        `;
-        document.body.appendChild(root);
-        root.addEventListener('click', onClick);
-        root.addEventListener('input', onInput);
-        render();
-    }
-
-    function onClick(event) {
-        const tab = event.target.closest('[data-tab]')?.dataset.tab;
-        const action = event.target.closest('[data-action]')?.dataset.action;
-        if (tab) {
-            state.activeTab = tab;
-            render();
-            return;
         }
-        if (action === 'close') {
-            document.getElementById(APP_ID)?.remove();
-            document.getElementById(STYLE_ID)?.remove();
-            return;
+    }
+}
+
+// egysÃ©g informÃ¡ciÃ³k lekÃ©rdezÃ©se
+function getUnitsInformation() {
+        return setServerDataInStorage("unitsConfig", $.ajax({
+			url: `https://${document.domain}/interface.php?func=get_unit_info`,
+			type: 'GET',
+			async: false,
+			success: function(xml) {},
+			error: function(xhr, statusText, error) {
+				$(".popup_box_container").remove();
+				console.log(errorText.units + error);
+				UI.ErrorMessage(errorText.units + error,8000);
+			}
+		}))
+}
+
+async function unitsInformation() {
+    await createObject();
+    if (!getStorage("unitsTimeUpdate") || Date.now() > getStorage("unitsTimeUpdate") + 3600 * 1000) {
+        var xml = await getUnitsInformation();
+        setTimeInStorage("unitsTimeUpdate");
+	}
+
+    for (var i = 0; i < units.length; i++) {
+        for (var k = 0; k < dat.length; k++) {
+			data = parseData("unitsConfig");
+            if ($(data).find(`config > ${units[i]}`).length > 0) {
+                config = Number($(data).find(`config > ${units[i]} > ${dat[k]}`)[0].innerHTML);
+                Object.defineProperty(obj.unitsObj[units[i]], dat[k], {value:config});
+                Object.defineProperty(obj.unitsObj[units[i]], "exist", {value:true});
+            } else {
+                if (units[i].includes("archer")) {
+                    disableUnit(units[i]);
+                    Object.defineProperty(obj.unitsObj[units[i]], "exist", {value:false});
+                }
+            }
         }
-        if (action === 'reset-units') {
-            Object.keys(state.units).forEach((id) => {
-                state.units[id] = 0;
+    }
+	unitsResources()
+    return true;
+}
+
+// szerver sebessÃ©g lekÃ©rdezÃ©se, Ã³rÃ¡nkÃ©nt max 1x
+function getConfigInformation() {
+        return setServerDataInStorage("configConfig", $.ajax({
+			url: `https://${document.domain}/interface.php?func=get_config`,
+			type: 'GET',
+			async: false,
+			success: function(xml) {},
+			error: function(xhr, statusText, error) {
+				$(".popup_box_container").remove();
+				console.log(errorText.speed + error);
+				UI.ErrorMessage(errorText.speed + error,8000);
+			}
+		}))
+}
+
+async function configInformation() {
+    await createObject();
+    if (!getStorage("configTimeUpdate") || Date.now() > getStorage("configTimeUpdate") + 3600 * 1000) {
+        var xml = await getConfigInformation();
+        setTimeInStorage("configTimeUpdate");
+    }
+	data = parseData("configConfig");
+    config = Number($(data).find("config > speed").text());
+    Object.defineProperty(obj.world, "worldSpeed", {value:config});
+}
+
+// egysÃ©g kÃ¶ltsÃ©g lekÃ©rdezÃ©se
+function getUnitsResources() {
+        return new Promise(function(resolve, reject) {
+            TribalWars.get("api", {ajax: "data", screen: "unit_info"}, resolve, reject)
+        }).then(
+            function(result) {
+                setTimeInStorage("resourceTimeUpdate");
+                setServerDataInStorage("resourceConfig", result);
+        },  function(error) {    
+				$(".popup_box_container").remove();
+				console.log(errorText.unitsCost);
+				UI.ErrorMessage(errorText.unitsCost,8000);
+        })
+}
+
+async function unitsResources() {
+    if (!getStorage("resourceTimeUpdate") || Date.now() > getStorage("resourceTimeUpdate") + 3600 * 1000) {
+        var responseText = await getUnitsResources();
+    }
+	data = JSON.parse(getStorage("resourceConfig"));
+    for (var i = 0; i < units.length; i++) {
+        if (obj.unitsObj[units[i]].exist === true) {
+            Object.defineProperty(obj.unitsObj[units[i]], "wood", {value:data.unit_data[units[i]].wood});
+            Object.defineProperty(obj.unitsObj[units[i]], "stone", {value:data.unit_data[units[i]].stone});
+            Object.defineProperty(obj.unitsObj[units[i]], "iron", {value:data.unit_data[units[i]].iron});
+        }
+    }
+}
+
+// style hozzÃ¡adÃ¡sa a HTML-hez
+function initCss(css) {
+    $(`<style>${css}</style>`).appendTo("body");
+}
+
+initCss(`
+    #popup_box_calculator {
+        width: 1500px !important;
+    }
+    div#myTable {
+        overflow-x: auto;
+        max-width: 100%;
+        display: flex;
+        white-space: nowrap;
+    }
+    table.inlineTable {
+        width: auto;
+        vertical-align: top;
+        border-collapse: collapse;
+        border-spacing: 0px;
+        margin: 0 10px;
+    }
+    table.inlineTable th {
+        border: 1px solid black;
+        padding: 3px;
+        text-align: center;
+    }
+    table.inlineTable td {
+        border: 1px solid black;
+        padding: 3px;
+        text-align: left;
+    }
+    table.modes img {
+        vertical-align: bottom;
+        height: 18px;
+        width: 22px;
+    }
+    table.modesb img {
+        vertical-align: bottom;
+        height: 18px;
+        width: 18px;
+    }
+    table.modesc img {
+        vertical-align: bottom;
+    }
+    table.modes tr:nth-child(8) img {
+        width: 18px !important;
+    }
+    table.modes tr:nth-child(12) img {
+        width: 18px !important;
+    }
+    table.modes tr:nth-child(21) img {
+        vertical-align: bottom;
+        height: 16px !important;
+        width: 18px !important;
+    }
+    table.bonus tr:first-child img {
+        vertical-align: bottom;
+        height: 13px;
+        width: 13px;
+    }
+    table.bonus tr:nth-child(2) img {
+        vertical-align: bottom;
+        margin-right: 1px;
+        height: 18px;
+        width: 22px;
+    }
+    table.bonus tr:nth-child(2) input {
+        width: 35px;
+    }
+    table.inlineTable tr:nth-child(even) {
+        background-color: #fff5da;
+    }
+    input.building {
+        width: 30px;
+    }
+    input.unit {
+        width: 70px;
+    }
+    table.inlineTable tr:nth-child(odd) {
+        background-color: #f0e2be;
+    }
+    table tr.separator {
+        height: 20px;
+    }
+    .space {
+        background: none !important;
+        border: none !important;
+        width: 5px;
+    }
+    .border td {
+         border: none !important;
+    }
+    .crosshatchedright {
+        background: repeating-linear-gradient(-45deg,rgba(0, 0, 0, 0.2),
+                    rgba(0, 0, 0, 0.2) 5px,
+                    rgba(0, 0, 0, 0.3) 5px,
+                    rgba(0, 0, 0, 0.3) 8px),
+                    url(http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/old_map_@2X.png);
+    }
+    .crosshatchedleft {
+        background: repeating-linear-gradient(45deg,rgba(0, 0, 0, 0.2),
+                    rgba(0, 0, 0, 0.2) 5px,
+                    rgba(0, 0, 0, 0.3) 5px,
+                    rgba(0, 0, 0, 0.3) 8px),
+                    url(http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/old_map_@2X.png);
+    }
+    .sumbuildtime, .haul, .pop, .build_time, .woodCost, .stoneCost, .ironCost, .popCost, .points {
+        text-align: center !important;
+    }
+    .property {
+        text-align: right !important;
+    }
+    .sidenav {
+        height: 100%;
+        width: 0px;
+        position: fixed;
+        z-index: 19;
+        top: 35px;
+        left: 0px;
+        background-color: #111;
+        overflow-x: hidden;
+        transition: 0.5s;
+        padding-top: 60px;
+    }
+
+    .sidenav a {
+        padding: 8px 8px 8px 32px;
+        text-decoration: none;
+        font-size: 25px;
+        color: #818181;
+        display: block;
+        transition: 0.3s;
+    }
+    .sidenav a:hover {
+        color: #f1f1f1;
+    }
+    .sidenav .closebtn {
+        position: absolute;
+        top: 0;
+        right: 0px;
+        font-size: 36px;
+        margin-left: 50px;
+    }
+    @media screen and (max-height: 450px) {
+        .sidenav {padding-top: 15px;}
+        .sidenav a {font-size: 18px;}
+    }
+    .gear img {
+        z-index: 12000;
+        position: absolute;
+        top: 3px;
+        cursor: pointer;
+	    width: 45px;
+	    height: 45px;
+    }
+    textarea {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    button#sendIssue, button#addURL {
+        display: block;
+        margin-left: auto;
+        margin-right: 6.5px; 
+        cursor: pointer;
+    }
+`);
+
+// adiciona uma nova opção à lista suspensa
+function createOption(option_name) {
+  $("#sablon").append(`<option>${option_name}</option>`)
+}
+
+// armazena os inputs em um array
+function getAllInputValue() {
+    var array = [];
+    for (var i = 0; i < 48; i++) {
+        array.push($("#myTable").find("input").eq(i).val());
+    }
+    var name = prompt("Digite o nome com que deseja salvar suas configurações:");
+    return {array,name}
+}
+
+// salva os inputs no localStorage e adiciona uma nova opção aos perfis
+function store() {
+    var pre = getAllInputValue();
+    name = "öregsaver_" + pre.name;
+    var object = {
+            "inputs":    pre.array
+    };
+    localStorage.setItem(name, btoa(JSON.stringify(object)));
+    createOption(pre.name);
+}
+
+// carrega os perfis na lista suspensa
+function loadSelectMenu() {
+    for(var key in localStorage) {
+        if (key.includes("öregsaver")) {
+            createOption(key.split("_")[1]);
+        }
+    }
+}
+
+// remove o item selecionado da lista suspensa
+function removeOptions() {
+    var item = $("#sablon").find(":selected");
+    var optionName = item.text();
+    item.remove();
+    for(var key in localStorage) {
+        if (key == `öregsaver_${optionName}`) {
+            localStorage.removeItem(key);
+        }
+    } 
+}
+
+// exporta o perfil selecionado
+function exports() {
+    var item = $("#sablon").find(":selected");
+    var optionName = item.text();
+    if (optionName != "opções") {
+        var val = localStorage.getItem(`öregsaver_${optionName}`);
+        var key = optionName;
+        prompt(prompts.text,key + "," + val);
+    }
+}
+
+// importa um perfil
+function imports() {
+    var importCode = prompt("Cole aqui o código recebido na exportação:");
+    var key = importCode.split(",")[0];
+    var val = importCode.split(",")[1];
+    localStorage.setItem(`öregsaver_${key}`, val);
+    createOption(key);
+}
+
+// evento ao selecionar um perfil
+$("#sablon").on("click", function(event) {
+    var item = $("#sablon").find(":selected");
+    var optionName = item.text();
+    if (optionName != "opções") {
+        var val = localStorage.getItem(`öregsaver_${optionName}`);
+        var inputs = JSON.parse(atob(val)).inputs;
+        for (var i = 0; i < 48; i++) {
+            $("#myTable").find("input").eq(i).val(inputs[i]);
+        }
+    }
+    buildingsFunctions();
+    unitsFunctions();
+    buildingsAndUnitsFunctions();
+})
+
+// cria uma mensagem
+function createMessage(type,message,time) {
+    UI[type](message,time);
+}
+
+// retorna se o pré-requisito necessário para construir foi atendido
+function buildingsLevel(building,level) {
+    return Number($("#" + building).val()) >= level;
+}
+
+// habilita a unidade se os pré-requisitos de recrutamento forem atendidos;
+// se a unidade não existir no servidor, ela continua desabilitada
+function enableUnit(unit) {
+    if (obj.unitsObj[unit].exist === false) {
+        return document.getElementById(unit).disabled = true;
+    } else {
+        return document.getElementById(unit).disabled = false;
+    }
+}
+
+// habilita o edifício se os pré-requisitos de construção forem atendidos;
+// se o edifício não existir no servidor, ele continua desabilitado
+function enableBuilding(building) {
+    if (obj.buildingsObj[building].exist === false) {
+        return document.getElementById(building).disabled = true;
+    } else {
+        if (building == "snob") {
+            building = "academy";
+        }
+        return document.getElementById(building).disabled = false;
+    }
+}
+
+// desabilita a unidade
+function disableUnit(unit) {
+    return document.getElementById(unit).disabled = true;
+}
+
+// desabilita o edifício
+function disableBuilding(building) {
+    if (building == "snob") {
+        building = "academy";
+    }
+    return document.getElementById(building).disabled = true;
+}
+
+// desabilita todas as unidades, exceto lanceiro e espadachim,
+// porque elas não têm pré-requisito e existem em todos os servidores
+function resetUnit() {
+    for (var i = 2; i < units.length-1; i++) {
+        disableUnit(units[i]);
+    }
+}
+resetUnit();
+
+// desabilita todos os edifícios que possuem pré-requisito
+function resetBuilding() {
+    var building = ["barracks", "stable", "garage", "church", "watchtower", "academy", "smith", "market", "wall"];
+    for (var i = 0; i < building.length; i++) {
+        disableBuilding(building[i]);
+    }
+}
+resetBuilding();
+
+// calcula o custo em madeira dos níveis dos edifícios
+function woodCost() {
+    for (var i = 0; i < buildings.length; i++) {
+        building_level = Number($(".building").eq(i).val());
+        wood = obj.buildingsObj[buildings[i]].wood;
+        wood_factor = obj.buildingsObj[buildings[i]].wood_factor;
+        if (building_level == 0 || building_level == "") {
+            $(".woodCost").eq(i).text(0);
+        } else {
+            text = Math.round(Math.pow(wood_factor, building_level - 1) * wood);
+            $(".woodCost").eq(i).text(numberWithCommas(text));
+        }
+    }
+}
+
+// calcula o custo em argila dos níveis dos edifícios
+function stoneCost() {
+    for (var i = 0; i < buildings.length; i++) {
+        building_level = Number($(".building").eq(i).val());
+        stone = obj.buildingsObj[buildings[i]].stone;
+        stone_factor = obj.buildingsObj[buildings[i]].stone_factor;
+        if (building_level == 0 || building_level == "") {
+            $(".stoneCost").eq(i).text(0);
+        } else {
+            text = Math.round(Math.pow(stone_factor, building_level - 1) * stone);
+            $(".stoneCost").eq(i).text(numberWithCommas(text));
+        }
+    }
+}
+
+// calcula o custo em ferro dos níveis dos edifícios
+function ironCost() {
+    for (var i = 0; i < buildings.length; i++) {
+        building_level = Number($(".building").eq(i).val());
+        iron = obj.buildingsObj[buildings[i]].iron;
+        iron_factor = obj.buildingsObj[buildings[i]].iron_factor;
+        if (building_level == 0 || building_level == "") {
+            $(".ironCost").eq(i).text(0);
+        } else {
+            text = Math.round(Math.pow(iron_factor, building_level - 1) * iron);
+            $(".ironCost").eq(i).text(numberWithCommas(text));
+        }
+    }
+}
+
+// calcula o custo de população dos níveis dos edifícios
+function popCost() {
+    for (var i = 0; i < buildings.length; i++) {
+        building_level = Number($(".building").eq(i).val());
+        pop = obj.buildingsObj[buildings[i]].pop;
+        pop_factor = obj.buildingsObj[buildings[i]].pop_factor;
+        if (building_level == 0 || building_level == "") {
+            $(".popCost").eq(i).text(0);
+        } else {
+            text = Math.round(Math.pow(pop_factor, building_level - 1) * pop);
+            $(".popCost").eq(i).text(numberWithCommas(text));
+        }
+    }
+    return true;
+}
+
+// calcula os pontos dos níveis dos edifícios
+function points() {
+    for (var i = 0; i < buildings.length; i++) {
+        building_level = Number($(".building").eq(i).val());
+        build_time_factor = obj.buildingsObj[buildings[i]].build_time_factor;
+        if (building_level == 0 || building_level == "") {
+            $(".points").eq(i).text(0);
+        } else {
+            text = Math.round(Math.pow(build_time_factor, building_level - 1) * firstLevelPoint[i]);
+            $(".points").eq(i).text(numberWithCommas(text));
+        }
+    }
+    return true;
+}
+
+// calcula a pontuação da aldeia
+async function sumPoints() {
+    var result = await points();
+    var sum = 0;
+    for (var i = 0; i < buildings.length; i++) {
+        point = Number($(".points").eq(i).text().replace(".",""));
+        sum += point;
+    }
+    $("#sumPoints").text(numberWithCommas(sum));
+}
+
+// calcula os recursos escondidos pelo esconderijo
+function hiddenResources() {
+    hide_level = Number($("#hide").val());
+    if (hide_level == 0 || hide_level == "") {
+        $("#hiddenResources").text(0);
+    } else {
+        text = Math.pow((4/3), hide_level - 1) * 150;
+        if (hide_level > 7) {
+            $("#hiddenResources").text(numberWithCommas(roundToNearestFive(text)));
+        } else {
+            $("#hiddenResources").text(roundToNearestInteger(text));
+        }
+    }
+}
+
+// calcula o número de mercadores
+function numberOfMerchants() {
+    market_level = Number($("#market").val());
+    if (market_level >= 10) {
+        text = Math.pow(market_level - 10, 2) + 10;
+    } else if (market_level == "") {
+        text = 0;
+    } else {
+        text = market_level;
+    }
+    $("#merchants").text(text);
+    return text;
+}
+
+// calcula a capacidade do armazém
+function capacity() {
+    warehouse_level = Number($("#warehouse").val());
+    if (warehouse_level == 0 || warehouse_level == "") {
+        $("#capacity").text(0);
+    } else {
+        text = Math.pow(1.2294934, warehouse_level - 1) * 1000;
+        $("#capacity").text(numberWithCommas(roundToNearestInteger(text)));
+    }
+    return text;
+}
+
+// calcula o bônus da muralha
+function wallBonus() {
+    wall_level = Number($("#wall").val());
+    text = (Math.pow(1.037, wall_level) - 1) * 100;
+    $("#wallBonus").text(roundToNearestInteger(text) + "%");
+}
+
+// calcula a produção de madeira
+function woodProd() {
+    wood_level =  Number($("#timber_camp").val());
+    if (wood_level == 0 || wood_level == "") {
+        wood = 0;
+    } else {
+        wood = Math.pow(1.163118, wood_level - 1) * 30;
+    }
+    $("#woodProd").text(numberWithCommas(roundToNearestInteger(wood)));
+    return {wood};
+}
+
+// calcula a produção de argila
+function stoneProd() {
+    stone_level =  Number($("#clay_pit").val());
+    if (stone_level == 0 || stone_level == "") {
+        stone = 0;
+    } else {
+        stone = Math.pow(1.163118, stone_level - 1) * 30;
+    }
+    $("#stoneProd").text(numberWithCommas(roundToNearestInteger(stone)));
+    return {stone};
+}
+
+// calcula a produção de ferro
+function ironProd() {
+    iron_level =  Number($("#iron_mine").val());
+    if (iron_level == 0 || iron_level == "") {
+        iron = 0;
+    } else {
+        iron = Math.pow(1.163118, iron_level - 1) * 30;
+    }
+    $("#ironProd").text(numberWithCommas(roundToNearestInteger(iron)));
+    return {iron};
+}
+// calcula a capacidade da fazenda
+function population() {
+    pop_level = Number($("#farm").val());
+    if (pop_level == 0 || pop_level == "") {
+        text = 0;
+    } else {
+        text = Math.pow(1.172103, pop_level - 1) * 240;
+    }
+    $("#population").text(numberWithCommas(roundToNearestInteger(text)));
+    return text;
+}
+
+// calcula o tempo de recrutamento das unidades
+function buildTimeOfUnit() {
+    barracks_level = Number($("#barracks").val());
+    stable_level = Number($("#stable").val());
+    garage_level = Number($("#garage").val());
+    statue_level = Number($("#statue").val());
+    academy_level = Number($("#academy").val());
+
+    for (var i = 0; i < units.length; i++) {
+        build_time = obj.unitsObj[units[i]].build_time;
+        piece = Number($(".unit").eq(i).val());
+        if (i < 4) {
+            if (!build_time || barracks_level == 0 || barracks_level == "") {
+                $(".build_time").eq(i).text("00:00:00:00");
+            } else {
+                barracksTime = 2/3 * build_time * Math.pow(1.06,-barracks_level) * piece / recruitBonus().barracksBonus;
+                text = secondsToDhms(roundUpToNearestInteger(barracksTime));
+                $(".build_time").eq(i).text(text);
+            }
+        }
+        if (3 < i && i < 8) {
+            if (!build_time || stable_level == 0 || stable_level == "") {
+                $(".build_time").eq(i).text("00:00:00:00");
+            } else {
+                stableTime = 2/3 * build_time * Math.pow(1.06,-stable_level) * piece / recruitBonus().stableBonus;
+                text = secondsToDhms(roundUpToNearestInteger(stableTime));
+                $(".build_time").eq(i).text(text);
+            }
+        }
+        if (7 < i && i < 10) {
+            if (!build_time || garage_level == 0 || garage_level == "") {
+                $(".build_time").eq(i).text("00:00:00:00");
+            } else {
+                garageTime = 2/3 * build_time * Math.pow(1.06,-garage_level) * piece / recruitBonus().garageBonus;
+                text = secondsToDhms(roundUpToNearestInteger(garageTime));
+                $(".build_time").eq(i).text(text);
+            }
+        }
+        if (i == 10) {
+            if (!build_time || statue_level == 0 || statue_level == "") {
+                $(".build_time").eq(i).text("00:00:00:00");
+            } else {
+                text = secondsToDhms(build_time * piece);
+                $(".build_time").eq(i).text(text);
+            }
+        }
+        if (i == 11) {
+            if (!build_time || academy_level == 0 || academy_level == "") {
+                $(".build_time").eq(i).text("00:00:00:00");
+            } else {
+                academyTime = 2/3 * build_time * Math.pow(1.06,-academy_level) * piece / recruitBonus().academyBonus;
+                text = secondsToDhms(roundUpToNearestInteger(academyTime));
+                $(".build_time").eq(i).text(text);
+            }
+        }
+        if (i == 12) {
+            $(".build_time").eq(i).text("00:00:00:00");
+        }
+    }
+    return true
+}
+
+// calcula a capacidade de carga das unidades
+function unitsHaul() {
+    barracks_level = Number($("#barracks").val());
+    stable_level = Number($("#stable").val());
+    garage_level = Number($("#garage").val());
+    statue_level = Number($("#statue").val());
+    academy_level = Number($("#academy").val());
+
+    for (var i = 0; i < units.length; i++) {
+        carry = Number(obj.unitsObj[units[i]].carry);
+        if (i < 4) {
+            if (!carry || barracks_level == 0 || barracks_level == "") {
+                $(".haul").eq(i).text(0);
+            } else {
+                piece = Number($(".unit").eq(i).val());
+                text = carry * piece;
+                $(".haul").eq(i).text(numberWithCommas(text));
+            }
+        }
+        if (3 < i && i < 8) {
+            if (!carry || stable_level == 0 || stable_level == "") {
+                $(".haul").eq(i).text(0);
+            } else {
+                piece = Number($(".unit").eq(i).val());
+                text = carry * piece;
+                $(".haul").eq(i).text(numberWithCommas(text));
+            }
+        }
+        if (7 < i && i < 10) {
+            if (!carry || garage_level == 0 || garage_level == "") {
+                $(".haul").eq(i).text(0);
+            } else {
+                piece = Number($(".unit").eq(i).val());
+                text = carry * piece;
+                $(".haul").eq(i).text(numberWithCommas(text));
+            }
+        }
+        if (i == 10) {
+            if (!carry || statue_level == 0 || statue_level == "") {
+                $(".haul").eq(i).text(0);
+            } else {
+                piece = Number($(".unit").eq(i).val());
+                text = carry * piece;
+                $(".haul").eq(i).text(numberWithCommas(text));
+            }
+        }
+        if (i == 11) {
+            if (!carry || academy_level == 0 || academy_level == "") {
+                $(".haul").eq(i).text(0);
+            } else {
+                piece = Number($(".unit").eq(i).val());
+                text = carry * piece;
+                $(".haul").eq(i).text(numberWithCommas(text));
+            }
+        }
+        if (i == 12) {
+            $(".haul").eq(i).text(0);
+        }
+    }
+}
+
+// calcula o espaço da fazenda ocupado pelas unidades
+function unitsPop() {
+    barracks_level = Number($("#barracks").val());
+    stable_level = Number($("#stable").val());
+    garage_level = Number($("#garage").val());
+    statue_level = Number($("#statue").val());
+    academy_level = Number($("#academy").val());
+
+    for (var i = 0; i < units.length; i++) {
+        pop = Number(obj.unitsObj[units[i]].pop);
+        if (i < 4) {
+            if (!pop || barracks_level == 0 || barracks_level == "") {
+                $(".pop").eq(i).text(0);
+            } else {
+                piece = Number($(".unit").eq(i).val());
+                text = pop * piece;
+                $(".pop").eq(i).text(numberWithCommas(text));
+            }
+        }
+        if (3 < i && i < 8) {
+            if (!pop || stable_level == 0 || stable_level == "") {
+                $(".pop").eq(i).text(0);
+            } else {
+                piece = Number($(".unit").eq(i).val());
+                text = pop * piece;
+                $(".pop").eq(i).text(numberWithCommas(text));
+            }
+        }
+        if (7 < i && i < 10) {
+            if (!pop || garage_level == 0 || garage_level == "") {
+                $(".pop").eq(i).text(0);
+            } else {
+                piece = Number($(".unit").eq(i).val());
+                text = pop * piece;
+                $(".pop").eq(i).text(numberWithCommas(text));
+            }
+        }
+        if (i == 10) {
+            if (!pop || statue_level == 0 || statue_level == "") {
+                $(".pop").eq(i).text(0);
+            } else {
+                piece = Number($(".unit").eq(i).val());
+                text = pop * piece;
+                $(".pop").eq(i).text(numberWithCommas(text));
+            }
+        }
+        if (i == 11) {
+            if (!pop || academy_level == 0 || academy_level == "") {
+                $(".pop").eq(i).text(0);
+            } else {
+                piece = Number($(".unit").eq(i).val());
+                text = pop * piece;
+                $(".pop").eq(i).text(numberWithCommas(text));
+            }
+        }
+        if (i == 12) {
+            $(".pop").eq(i).text(0);
+        }
+    }
+    return true
+}
+
+// soma o tempo de recrutamento das unidades por edifício
+async function sumBuildTimeOfUnit() {
+    var result = await buildTimeOfUnit();
+    var seconds = 0;
+    var $seconds = 0;
+    var $$seconds = 0;
+    for (var i = 0; i < units.length; i++) {
+        if (i < 4) {
+            time = $(".build_time").eq(i).text().split(":");
+            seconds += Number(time[0]) * 86400 +  Number(time[1]) * 3600 +  Number(time[2]) * 60 +  Number(time[3]);
+            text = secondsToDhms(seconds)
+            $(".sumbuildtime").eq(0).text(text);
+        }
+        if (3 < i && i < 8) {
+            time = $(".build_time").eq(i).text().split(":");
+            $seconds += Number(time[0]) * 86400 +  Number(time[1]) * 3600 +  Number(time[2]) * 60 +  Number(time[3]);
+            text = secondsToDhms($seconds)
+            $(".sumbuildtime").eq(1).text(text);
+        }
+        if (7 < i && i < 10) {
+            time = $(".build_time").eq(i).text().split(":");
+            $$seconds += Number(time[0]) * 86400 +  Number(time[1]) * 3600 +  Number(time[2]) * 60 +  Number(time[3]);
+            text = secondsToDhms($$seconds)
+            $(".sumbuildtime").eq(2).text(text);
+        }
+    }
+}
+
+// calcula a população ocupada
+async function lockedPop() {
+    var lockedsum = 0;
+    buildingpop = $(".popCost");
+    unitpop = $(".pop");
+
+    var res = await popCost();
+    for (var i = 0; i < buildingpop.length; i++) {
+        lockedsum += Number(buildingpop.eq(i).text().replace(".", ""));
+    }
+
+    var result = await unitsPop();
+    for (var i = 0; i < unitpop.length; i++) {
+        lockedsum += Number(unitpop.eq(i).text().replace(".", ""));
+    }
+    $("#locked").text(numberWithCommas(lockedsum));
+    return lockedsum;
+}
+
+// calcula a população livre
+async function freePop() {
+    var res = await popBonus();
+    var result = await lockedPop();
+    redClass();
+    pop = roundDownToNearestInteger(res);
+
+    locked = result;
+
+    free = pop - locked;
+    $("#free").text(numberWithCommas(free));
+}
+
+// se a população ocupada for maior que a população disponível,
+// os valores de população ocupada e livre ficam vermelhos
+function redClass() {
+    var pop = Number($("#population").text().replace(".",""));
+    var locked = Number($("#locked").text().replace(".",""));
+    if (locked > pop) {
+        $("#locked").addClass("red");
+        $("#free").addClass("red");
+    } else {
+        $("#locked").removeClass("red");
+        $("#free").removeClass("red");
+    }
+}
+
+// calcula o bônus de mercadores
+async function marketBonus() {
+    var merchants = await numberOfMerchants();
+    var merchantsBonusVillage = Number($("#merchantsBonusVillage").val());
+    var merchantsInventory = Number($("#merchantsInventory").val());
+    var bonusMerchants = merchants * (merchantsBonusVillage + merchantsInventory) / 100 + merchants;
+    $("#merchants").text(roundToNearestInteger(bonusMerchants));
+}
+
+// calcula o bônus de capacidade do armazém
+async function storageBonus() {
+    var storage = await capacity();
+    var storageBonusVillage = Number($("#storageBonusVillage").val());
+    var storageInventory = Number($("#storageInventory").val());
+    var bonusStorage = storage * (storageBonusVillage + storageInventory) / 100 + storage;
+    $("#capacity").text(numberWithCommas(roundToNearestInteger(bonusStorage)));
+}
+
+// calcula o bônus de carga
+async function haulBonus() {
+    var result = await unitsHaul();
+    var haul = $(".haul");
+    var haulFlag = Number($("#haulFlag").val());
+    var haulInventory = Number($("#haulInventory").val());
+    for (var i = 0; i < haul.length; i++) {
+        oldHaul = Number(haul.eq(i).text().replace(".",""));
+        newHaul = oldHaul * (1 + haulFlag / 100) * (1 + haulInventory / 100);
+        haul.eq(i).text(numberWithCommas(roundToNearestInteger(newHaul)));
+    }
+}
+
+// calcula o bônus de população
+async function popBonus() {
+    var result = await population();
+    var popBonusVillage = Number($("#popBonusVillage").val());
+    var popFlag = Number($("#popFlag").val());
+    var popInventory = Number($("#popInventory").val());
+    var oldPop = result;
+    var newPop = oldPop * (1 + popBonusVillage / 100) * (1 + popFlag / 100) * (1 + popInventory / 100);
+    $("#population").text(numberWithCommas(roundDownToNearestInteger(newPop)));
+    return newPop;
+}
+
+// calcula o bônus de recrutamento
+function recruitBonus() {
+    var barracksBonus = 1 + Number($("#barracksBonus").val()) / 100;
+    var stableBonus = 1 + Number($("#stableBonus").val()) / 100;
+    var garageBonus = 1 + Number($("#garageBonus").val()) / 100;
+    var academyBonus = 1 + Number($("#academyBonus").val()) / 100;
+    return {barracksBonus, stableBonus, garageBonus, academyBonus}
+}
+
+// calcula o bônus de produção
+async function resourceBonus() {
+    var woodBaseProd = await woodProd();
+    var stoneBaseProd = await stoneProd();
+    var ironBaseProd = await ironProd();
+
+    worldSpeed = obj.world.worldSpeed;
+    var wood = woodBaseProd.wood * worldSpeed;
+    var stone = stoneBaseProd.stone * worldSpeed;
+    var iron = ironBaseProd.iron * worldSpeed;
+
+    var woodBonus = Number($("#woodBonus").val());
+    var stoneBonus = Number($("#stoneBonus").val());
+    var ironBonus = Number($("#ironBonus").val());
+
+    var bonusWoodProduction = wood * (1 + woodBonus / 100);
+    var bonusStoneProduction = stone * (1 + stoneBonus / 100);
+    var bonusIronProduction = iron * (1 + ironBonus / 100);
+
+    $("#woodProd").text(numberWithCommas(roundToNearestInteger(bonusWoodProduction)));
+    $("#stoneProd").text(numberWithCommas(roundToNearestInteger(bonusStoneProduction)));
+    $("#ironProd").text(numberWithCommas(roundToNearestInteger(bonusIronProduction)));
+}
+
+// calcula os custos das unidades
+function unitsCost() {
+    var wood = 0;
+    var stone = 0;
+    var iron = 0;
+    for (var i = 0; i < units.length; i++) {
+        if (obj.unitsObj[units[i]].exist === true) {
+            piece = Number($(".unit").eq(i).val());
+            wood += Number(obj.unitsObj[units[i]].wood) * piece;
+            stone += Number(obj.unitsObj[units[i]].stone) * piece;
+            iron += Number(obj.unitsObj[units[i]].iron) * piece;
+        }
+    }
+    $("#unitsWoodCost").text(numberWithCommas(wood));
+    $("#unitsStoneCost").text(numberWithCommas(stone));
+    $("#unitsIronCost").text(numberWithCommas(iron));
+    return {wood, stone, iron}
+}
+
+// calcula os custos dos edifícios
+function buildingsCost() {
+    var wood = 0;
+    var stone = 0;
+    var iron = 0;
+    for (var i = 0; i < buildings.length; i++) {
+        building_level = Number($(".building").eq(i).val());
+        for (var k = 1; k < building_level+1; k++) {  
+            $wood = obj.buildingsObj[buildings[i]].wood;
+            wood_factor = obj.buildingsObj[buildings[i]].wood_factor;
+            if (building_level == 0 || building_level == "") {
+                wood += 0
+            } else {
+                wood += Math.pow(wood_factor, k - 1) * $wood;
+            }
+        }
+    }
+    $("#buildingsWoodCost").text(numberWithCommas(Math.round(wood)));
+
+    for (var i = 0; i < buildings.length; i++) {
+        building_level = Number($(".building").eq(i).val());
+        for (var k = 1; k < building_level+1; k++) {  
+            $stone = obj.buildingsObj[buildings[i]].stone;
+            stone_factor = obj.buildingsObj[buildings[i]].stone_factor;
+            if (building_level == 0 || building_level == "") {
+                stone += 0
+            } else {
+                stone += Math.pow(stone_factor, k - 1) * $stone;
+            }
+        }
+    }
+    $("#buildingsStoneCost").text(numberWithCommas(Math.round(stone)));
+
+    for (var i = 0; i < buildings.length; i++) {
+        building_level = Number($(".building").eq(i).val());
+        for (var k = 1; k < building_level+1; k++) {  
+            $iron = obj.buildingsObj[buildings[i]].iron;
+            iron_factor = obj.buildingsObj[buildings[i]].iron_factor;
+            if (building_level == 0 || building_level == "") {
+                iron += 0
+            } else {
+                iron += Math.pow(iron_factor, k - 1) * $iron;
+            }
+        }
+    }
+    $("#buildingsIronCost").text(numberWithCommas(Math.round(iron)));
+    return {wood, stone, iron}
+}
+
+// soma os custos de edifícios e unidades
+async function sumUnitsAndBuildingsCost() {
+    var buildings = await buildingsCost();
+    currentBuildingsCost();
+    var units = await unitsCost();
+    var wood = units.wood + buildings.wood;
+    var stone = units.stone + buildings.stone;
+    var iron = units.iron + buildings.iron;
+
+    $("#sumUnitsAndBuildingsWoodCost").text(numberWithCommas(Math.round(wood)));
+    $("#sumUnitsAndBuildingsStoneCost").text(numberWithCommas(Math.round(stone)));
+    $("#sumUnitsAndBuildingsIronCost").text(numberWithCommas(Math.round(iron)));
+}
+
+// calcula os custos dos níveis atuais dos edifícios
+function currentBuildingsCost() {
+    var woodCost = $(".woodCost");
+    var stoneCost = $(".stoneCost");
+    var ironCost = $(".ironCost");
+    var wood = 0;
+    var stone = 0;
+    var iron = 0;
+    for (var i = 0; i < woodCost.length; i++) {
+        wood += Number(woodCost.eq(i).text().replace(".",""));
+        stone += Number(stoneCost.eq(i).text().replace(".",""));
+        iron += Number(ironCost.eq(i).text().replace(".",""));
+    }
+    $("#currentBuildingsWoodCost").text(numberWithCommas(wood));
+    $("#currentBuildingsStoneCost").text(numberWithCommas(stone));
+    $("#currentBuildingsIronCost").text(numberWithCommas(iron));
+}
+
+// converte segundos para dd:hh:mm:ss
+function secondsToDhms(seconds) {
+    var d = Math.floor(seconds / (3600*24));
+    var h = Math.floor(seconds % (3600*24) / 3600);
+    var m = Math.floor(seconds % 3600 / 60);
+    var s = Math.floor(seconds % 60);
+
+    var dDisplay = (d < 10) ? "0" + d + ":" : d + ":";
+    var hDisplay = (h < 10) ? "0" + h + ":" : h + ":";
+    var mDisplay = (m < 10) ? "0" + m + ":" : m + ":";
+    var sDisplay = (s < 10) ? "0" + s : s;
+    return dDisplay + hDisplay + mDisplay + sDisplay;
+}
+
+function roundToNearestFive(number) {
+    return Math.ceil(number/5)*5;
+}
+
+function roundToNearestInteger(number) {
+    return Math.round(number);
+}
+
+function roundDownToNearestInteger(number) {
+    return Math.floor(number);
+}
+
+function roundUpToNearestInteger(number) {
+    return Math.ceil(number);
+}
+
+// formata números com ponto como separador de milhar
+function numberWithCommas(x) {
+    var parts = x.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return parts.join(".");
+}
+
+function byebye() {
+    createMessage("SuccessMessage","Até a próxima!",2000)
+}
+
+function buildingsFunctions() {
+    select(); // OK
+    woodCost(); // OK
+    stoneCost(); // OK
+    ironCost(); // OK
+    popCost(); // OK
+    sumPoints(); // OK
+    hiddenResources(); // OK
+    wallBonus(); // OK
+    marketBonus(); // OK
+    storageBonus(); // OK
+    resourceBonus(); // OK
+}
+
+function unitsFunctions() {
+    unitsPop(); // OK
+    sumBuildTimeOfUnit(); // OK
+    haulBonus(); // OK
+}
+
+function buildingsAndUnitsFunctions() {
+    freePop(); // OK
+    sumUnitsAndBuildingsCost(); // OK
+}
+
+function spinMainIcon(durationMs, deg) {
+    $({deg: 0}).animate({deg: deg}, {
+        duration: durationMs,
+        step: (angle) => {
+            $(".gear img").css({
+                transform: 'rotate(' + angle + 'deg)'
             });
-            render();
-            return;
         }
-        if (action === 'next-building') {
-            Object.keys(BUILDINGS).forEach((id) => {
-                const current = state.buildings[id].current;
-                state.buildings[id].target = Math.min(BUILDINGS[id].max, current + 1);
-            });
-            render();
+    });
+}
+
+$(".gear").find("img").on("click", function(event) {
+    spinMainIcon(500, -180);
+})
+
+// evento de alteração de nível de edifício/unidade/bônus
+$(".building, .unit, .bon").on("keyup input", function(event) {
+    var classname = event.target.className;
+    var value = event.target.valueAsNumber;
+    var min = Number(event.target.min);
+    var max = Number(event.target.max);
+    var val = event.target.value;
+    var id = event.target.id;
+    var keyCode = event.keyCode;
+   
+    if (regExp.test(val) || value > max || value < min || ((keyCode < 7 || keyCode > 9) && (keyCode < 48 || keyCode > 57) && (keyCode < 96 || keyCode > 105))) {
+        event.target.value = "";
+        if (classname == "building") {
+            createMessage("ErrorMessage",`Esse edifício não possui esse nível! Mínimo: ${min}, Máximo: ${max}`,1500);
+        }
+        if (classname == "unit") {
+            createMessage("ErrorMessage",`Quantidade inválida! Mínimo: ${min}, Máximo: ${max}`,1500);
+        }
+        if (classname == "bon") {
+            createMessage("ErrorMessage",`Valor inválido! Mínimo: ${min}, Máximo: ${max}`,1500);
+        }
+    } else {
+        if (classname == "building") {
+            buildingsFunctions();
+            unitsFunctions();
+            buildingsAndUnitsFunctions();
+        }
+        if (classname == "unit") {
+            unitsFunctions();
+            buildingsAndUnitsFunctions();
+        }
+        if (classname == "bon") {
+            buildingsFunctions();
+            unitsFunctions();
+            buildingsAndUnitsFunctions();
         }
     }
-
-    function onInput(event) {
-        const input = event.target;
-        const building = input.dataset.building;
-        const unit = input.dataset.unit;
-        if (building) {
-            const field = input.dataset.field;
-            const max = BUILDINGS[building].max;
-            state.buildings[building][field] = clampInt(input.value, 0, max);
-            renderSummaryOnly();
-        }
-        if (unit) {
-            state.units[unit] = clampInt(input.value, 0, 999999);
-            renderSummaryOnly();
-        }
+})
+// evento do botão de rádio mínimo
+function minimum() {
+    for (var i = 0; i < buildings.length; i++) {
+        min_level = obj.buildingsObj[buildings[i]].min_level;
+        $(".building").eq(i).val(min_level);
     }
+    buildingsFunctions();
+    unitsFunctions();
+    buildingsAndUnitsFunctions();
+}
 
-    function render() {
-        const root = document.getElementById(APP_ID);
-        if (!root) return;
-        root.querySelectorAll('.ks-tab').forEach((button) => {
-            button.classList.toggle('active', button.dataset.tab === state.activeTab);
-        });
-        const body = root.querySelector('.ks-body');
-        if (state.activeTab === 'buildings') body.innerHTML = renderBuildings();
-        if (state.activeTab === 'units') body.innerHTML = renderUnits();
-        if (state.activeTab === 'summary') body.innerHTML = renderSummaryTab();
+// evento do botão de rádio máximo
+function maximum() {
+    for (var i = 0; i < buildings.length; i++) {
+        max_level = obj.buildingsObj[buildings[i]].max_level;
+        $(".building").eq(i).val(max_level);
     }
+    buildingsFunctions();
+    unitsFunctions();
+    buildingsAndUnitsFunctions();
+}
 
-    function renderSummaryOnly() {
-        document.querySelectorAll('[data-summary]').forEach((node) => {
-            const total = sumTotal();
-            node.innerHTML = summaryCards(total);
-        });
+// verifica os pré-requisitos de edifícios e unidades
+function select() {
+    if (buildingsLevel("headquarters",3)) {
+        enableBuilding("barracks");
+    } else {
+        disableBuilding("barracks");
     }
-
-    function summaryCards(total) {
-        return `
-            <div class="ks-card"><strong>Madeira</strong><span>${formatNumber(total.wood)}</span></div>
-            <div class="ks-card"><strong>Argila</strong><span>${formatNumber(total.stone)}</span></div>
-            <div class="ks-card"><strong>Ferro</strong><span>${formatNumber(total.iron)}</span></div>
-            <div class="ks-card"><strong>Populacao</strong><span>${formatNumber(total.pop)}</span></div>
-        `;
+    if (buildingsLevel("headquarters",10) && buildingsLevel("barracks",5) && buildingsLevel("smith",5)) {
+        enableBuilding("stable");
+    } else {
+        disableBuilding("stable");
     }
-
-    function renderBuildings() {
-        const rows = Object.entries(BUILDINGS).map(([id, def]) => {
-            const item = state.buildings[id];
-            return `
-                <div class="ks-row">
-                    <div class="ks-name">${def.name}<div class="ks-sub">max. ${def.max}</div></div>
-                    <input class="ks-input" data-building="${id}" data-field="current" type="number" min="0" max="${def.max}" value="${item.current}" title="Nivel atual">
-                    <input class="ks-input" data-building="${id}" data-field="target" type="number" min="0" max="${def.max}" value="${item.target}" title="Nivel alvo">
-                </div>
-            `;
-        }).join('');
-        return `
-            <div class="ks-toolbar">
-                <button class="ks-btn secondary" type="button" data-action="next-building">Alvo +1 em tudo</button>
-                <span class="ks-note">Colunas: nivel atual e nivel alvo.</span>
-            </div>
-            <div class="ks-summary" data-summary>${summaryCards(sumTotal())}</div>
-            <div class="ks-grid">${rows}</div>
-            <div class="ks-note">Valores sao estimativas baseadas nos custos padrao do Tribal Wars. Mundos especiais podem ter ajustes.</div>
-        `;
+    if (buildingsLevel("headquarters",10) && buildingsLevel("smith",10)) {
+        enableBuilding("garage");
+    } else {
+        disableBuilding("garage");
     }
-
-    function renderUnits() {
-        const rows = Object.entries(UNITS).map(([id, def]) => `
-            <div class="ks-row unit">
-                <div class="ks-name">${def.name}<div class="ks-sub">${def.wood}/${def.stone}/${def.iron} | pop ${def.pop}</div></div>
-                <input class="ks-input" data-unit="${id}" type="number" min="0" max="999999" value="${state.units[id]}" title="Quantidade">
-            </div>
-        `).join('');
-        return `
-            <div class="ks-toolbar">
-                <button class="ks-btn secondary" type="button" data-action="reset-units">Zerar tropas</button>
-            </div>
-            <div class="ks-summary" data-summary>${summaryCards(sumTotal())}</div>
-            <div class="ks-grid">${rows}</div>
-        `;
+    if (buildingsLevel("headquarters",5) && buildingsLevel("farm",5)) {
+        enableBuilding("church");
+    } else {
+        disableBuilding("church");
     }
-
-    function renderSummaryTab() {
-        const buildings = getBuildingTotal();
-        const units = getUnitTotal();
-        const total = sumTotal();
-        return `
-            <div class="ks-summary" data-summary>${summaryCards(total)}</div>
-            <div class="ks-grid">
-                <div class="ks-card">
-                    <strong>Construcoes</strong>
-                    Madeira: ${formatNumber(buildings.wood)}<br>
-                    Argila: ${formatNumber(buildings.stone)}<br>
-                    Ferro: ${formatNumber(buildings.iron)}<br>
-                    Populacao: ${formatNumber(buildings.pop)}
-                </div>
-                <div class="ks-card">
-                    <strong>Tropas</strong>
-                    Madeira: ${formatNumber(units.wood)}<br>
-                    Argila: ${formatNumber(units.stone)}<br>
-                    Ferro: ${formatNumber(units.iron)}<br>
-                    Populacao: ${formatNumber(units.pop)}
-                </div>
-            </div>
-            <div class="ks-note">Dica: como o menu KIARA carrega este arquivo por uma URL fixa, corrigir o arquivo no GitHub ja faz o botao voltar a funcionar para todo mundo apos o cache do CDN atualizar.</div>
-        `;
+    if (buildingsLevel("headquarters",20) && buildingsLevel("smith",20) && buildingsLevel("market",10)) {
+        enableBuilding("snob");
+    } else {
+        disableBuilding("snob");
     }
-
-    injectStyles();
-    createShell();
-})();
+    if (buildingsLevel("headquarters",5) && buildingsLevel("barracks",1)) {
+        enableBuilding("smith");
+    } else {
+        disableBuilding("smith");
+    }
+    if (buildingsLevel("headquarters",3) && buildingsLevel("warehouse",2)) {
+        enableBuilding("market");
+    } else {
+        disableBuilding("market");
+    }
+    if (buildingsLevel("barracks",1)) {
+        enableBuilding("wall");
+    } else {
+        disableBuilding("wall");
+    }
+    if (buildingsLevel("headquarters",5) && buildingsLevel("farm",5)) {
+        enableBuilding("watchtower");
+    } else {
+        disableBuilding("watchtower");
+    }
+    if (buildingsLevel("smith",2)) {
+        enableUnit("axe");
+    } else {
+        disableUnit("axe");
+    }
+    if (buildingsLevel("barracks",5) && buildingsLevel("smith",5)) {
+        enableUnit("archer");
+    } else {
+        disableUnit("archer");
+    }
+    if (buildingsLevel("stable",1)) {
+        enableUnit("spy");
+    } else {
+        disableUnit("spy");
+    }
+    if (buildingsLevel("stable",3)) {
+        enableUnit("light");
+    } else {
+        disableUnit("light");
+    }
+    if (buildingsLevel("stable",5)) {
+        enableUnit("marcher");
+    } else {
+        disableUnit("marcher");
+    }
+    if (buildingsLevel("stable",10) && buildingsLevel("smith",15)) {
+        enableUnit("heavy");
+    } else {
+        disableUnit("heavy");
+    }
+    if (buildingsLevel("garage",1)) {
+        enableUnit("ram");
+    } else {
+        disableUnit("ram");
+    }
+    if (buildingsLevel("garage",2) && buildingsLevel("smith",12)) {
+        enableUnit("catapult");
+    } else {
+        disableUnit("catapult");
+    }
+    if (buildingsLevel("statue",1)) {
+        enableUnit("knight");
+    } else {
+        disableUnit("knight");
+    }
+    if (buildingsLevel("academy",1) && buildingsLevel("headquarters",20) && buildingsLevel("smith",20) && buildingsLevel("market",10)) {
+        enableUnit("snob");
+    } else {
+        disableUnit("snob");
+    }
+}
+void(0);
