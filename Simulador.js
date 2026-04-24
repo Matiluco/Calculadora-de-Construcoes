@@ -1,501 +1,322 @@
-$('#mltk-wrapper').remove();
-$('#mltk-style').remove();
-$('#mltk-bottom-bar').remove();
-
 (function () {
     'use strict';
 
-    const TOOLKIT_CONFIG = {
-        name: 'Script KIARA',
-        version: '1.0',
-        iconUrl: 'https://i.imgur.com/p50QNka.png',
-        categories: [
-            {
-                id: 'maps',
-                label: 'Mapas',
-                icon: '🌍',
-                items: [
-                    {
-                        label: 'Coletar Coords Mapa',
-                        action: () => $.getScript('https://twscripts.dev/scripts/mapCoordPicker.js')
-                    },
-                    {
-                        label: 'Range da Torre',
-                        action: () => $.getScript('https://shinko-to-kuma.com/scripts/watchTower.js')
-                    },
-                    {
-                        label: 'Mapa do Mundo',
-                        action: () => openCurrentWorldTwStatsMap()
-                    },
-                    {
-                        label: 'TW Replay',
-                        action: () => openCurrentWorldReplay()
-                    }
-                ]
-            },
-            {
-                {
-    id: 'tools',
-    label: 'Ferramentas',
-    icon: '🧰',
-    items: [
-        {
-            label: 'Adicionar nota na aldeia',
-            action: () => $.getScript('https://media.innogamescdn.com/com_DS_BR/Scripts/Aprovados/AutoNotesFromReports.js')
-        },
-        {
-            label: 'Adicionar grupo em massa',
-            action: () => $.getScript('https://www.dl.dropboxusercontent.com/scl/fi/c743u2tn6e4g3345ztb7i/Group_Import_Coordinate.js?rlkey=y1g84o3zzwiva16c9hpr86bs3&dl=0')
-        },
-        {
-            label: 'Importar grupo dinâmico',
-            action: () => $.getScript('https://twscripts.dev/scripts/importExportDynamicGroups.js')
-        },
-        {
-            label: 'Renomeador de aldeias',
-            action: () => $.getScript('https://dl.dropboxusercontent.com/s/9rpgd3weuj0vp7z/renameVillages.js')
-        },
-        {
-            label: 'Enviar Recursos',
-            action: () => $.getScript('https://shinko-to-kuma.com/scripts/res-senderV2.js')
-        },
-        {
-            label: 'Coletar coords perfil',
-            action: () => $.getScript('https://twscripts.dev/scripts/extendedPlayerInfo.js')
-        },
-        {
-            label: 'Simulador de Construção e Tropas',
-            action: () => {
-                const s = document.createElement('script');
-                s.src = 'https://cdn.jsdelivr.net/gh/Matiluco/Calculadora-de-Construcoes@main/Simulador.js?' + Date.now();
-                s.onload = function () { console.log('Simulador carregado'); };
-                s.onerror = function () { alert('Erro ao carregar Simulador'); };
-                document.body.appendChild(s);
-            }
-        }
-    ]
-},
-            {
-                id: 'stats',
-                label: 'Estatísticas',
-                icon: '📊',
-                items: [
-                    {
-                        label: 'Analisar jogador',
-                        action: () => $.getScript('https://dl.dropboxusercontent.com/s/g9cl2fzx46eq9ce/profileStats.js')
-                    },
-                    {
-                        label: 'Performance da tribo',
-                        action: () => $.getScript('https://shinko-to-kuma.com/scripts/tribeStats.js')
-                    },
-                    {
-                        label: 'Comparação das tribos',
-                        action: () => $.getScript('https://twscripts.dev/scripts/tribeStatsTool.js')
-                    },
-                    {
-                        label: 'Eficiência do farm',
-                        action: () => $.getScript('https://twscripts.dev/scripts/farmingEfficiencyCalculator.js')
-                    }
-                ]
-            },
-            {
-                id: 'troops',
-                label: 'Tropas',
-                icon: '⚔️',
-                items: [
-                    {
-                        label: 'Calculadora de tropas',
-                        action: () => $.getScript('https://media.innogamescdn.com/com_DS_BR/Scripts/Aprovados/AnotherTroopCounter.js')
-                    },
-                    {
-                        label: 'Checar defesa',
-                        action: () => $.getScript('https://twscripts.dev/scripts/defenseHealthCheck.js')
-                    },
-                    {
-                        label: 'Meus Apoios',
-                        action: () => $.getScript('https://media.innogamescdn.com/com_DS_BR/Scripts/Aprovados/SupportCounter.js')
-                    }
-                ]
-            },
-            {
-                id: 'others',
-                label: 'Outros',
-                icon: '🧩',
-                items: [
-                    {
-                        label: 'Somar Armazém',
-                        action: () => $.getScript('https://www.dl.dropboxusercontent.com/scl/fi/ickl4s1q40pvduccpxzj9/sumStorage.js?rlkey=qhlqvnkh8qg90tc6xqo8a0esx&dl=0')
-                    },
-                    {
-                        label: 'Produção total',
-                        action: () => {
-                            window.bonusProd = 0.2;
-                            window.useFlags = true;
-                            $.getScript('https://dev.nonreal.de/scripts/res_add.js');
-                        }
-                    },
-                    {
-                        label: 'Previsão farm e coleta (Em um Dia)',
-                        action: () => $.getScript('https://api-users.herokuapp.com/resultDay.js?dl=0')
-                    },
-                    {
-                        label: 'Calculadora de pps',
-                        action: () => $.getScript('https://shinko-to-kuma.com/scripts/log.js')
-                    },
-                    {
-                        label: 'Previsão bandeiras',
-                        action: () => {
-                            function processFlagRow(row) {
-                                let flags = [];
+    const APP_ID = 'kiara-simulador';
+    const STYLE_ID = 'kiara-simulador-style';
+    const VERSION = '2.0.0';
 
-                                for (let i = 1; i <= 9; i++) {
-                                    let flagBox = document.querySelector(`#flag_box_${row}_${i}`);
-                                    if (flagBox) {
-                                        let flagCountElement = flagBox.querySelector('.flag_count');
-                                        if (flagCountElement) {
-                                            flags.push(flagCountElement.innerText);
-                                        }
-                                    }
-                                }
+    document.getElementById(APP_ID)?.remove();
+    document.getElementById(STYLE_ID)?.remove();
 
-                                flags = flags.map(flag => flag === '' ? 0 : parseInt(flag, 10));
+    const WORLD_SPEED = Number(window.game_data?.speed) || 1;
+    const CURRENT_BUILDINGS = window.game_data?.village?.buildings || {};
 
-                                for (let i = 0; i < flags.length - 1; i++) {
-                                    let currentLevel = flags[i];
-                                    let nextLevel = flags[i + 1];
-                                    let convertToNextLevel = Math.floor(currentLevel / 3);
-
-                                    if (convertToNextLevel > 0) {
-                                        console.log(`Linha ${row}: Calculando bandeiras do nível ${i + 1}, onde tenho ${currentLevel} bandeiras. Posso transformar ${convertToNextLevel * 3} bandeiras em ${convertToNextLevel} bandeira(s) para o próximo nível.`);
-                                        console.log(`Linha ${row}: Nível ${i + 2} tinha ${nextLevel} bandeira(s) e agora terá ${nextLevel + convertToNextLevel} bandeira(s).`);
-
-                                        flags[i + 1] += convertToNextLevel;
-                                        flags[i] -= convertToNextLevel * 3;
-                                    } else {
-                                        console.log(`Linha ${row}: No nível ${i + 1}, tenho ${currentLevel} bandeiras. Não há bandeiras suficientes para converter.`);
-                                    }
-                                }
-
-                                for (let i = 1; i <= 9; i++) {
-                                    let flagBox = document.querySelector(`#flag_box_${row}_${i}`);
-                                    if (flagBox) {
-                                        let flagCountElement = flagBox.querySelector('.flag_count');
-                                        let newFlagCount = flags[i - 1];
-
-                                        let flagUpgrade = flagBox.querySelector('.flag_upgrade');
-                                        if (flagUpgrade) {
-                                            flagUpgrade.remove();
-                                        }
-
-                                        if (newFlagCount > 0) {
-                                            flagCountElement.innerText = newFlagCount;
-
-                                            flagBox.style.backgroundImage = `url('https://dsxs.innogamescdn.com/asset/e0dbe5d0/graphic/flags/medium/${row}_${i}.png')`;
-                                            flagBox.style.cursor = 'pointer';
-
-                                            flagCountElement.style.display = 'inline';
-                                            flagCountElement.style.backgroundColor = 'lightgreen';
-
-                                            flagBox.classList.remove('flag_box_empty');
-                                            flagBox.classList.remove(`flag_box_empty_${i}`);
-                                        } else {
-                                            flagBox.classList.add('flag_box_empty');
-                                            if (flagCountElement) {
-                                                flagCountElement.style.display = 'none';
-                                            }
-                                            flagBox.style.cursor = 'default';
-                                            flagBox.style.backgroundImage = `url('https://dsbr.innogamescdn.com/asset/1e5b6b81/graphic/flags/medium/${row}_6.png')`;
-                                        }
-                                    }
-                                }
-                            }
-
-                            for (let row = 1; row <= 8; row++) {
-                                processFlagRow(row);
-                            }
-                        }
-                    }
-                ]
-            }
-        ]
+    const BUILDINGS = {
+        main: { name: 'Edificio Principal', max: 30, pop: 5, wood: 90, stone: 80, iron: 70, factor: 1.26 },
+        barracks: { name: 'Quartel', max: 25, pop: 7, wood: 200, stone: 170, iron: 90, factor: 1.28 },
+        stable: { name: 'Estabulo', max: 20, pop: 8, wood: 270, stone: 240, iron: 260, factor: 1.28 },
+        garage: { name: 'Oficina', max: 15, pop: 8, wood: 300, stone: 240, iron: 260, factor: 1.28 },
+        smith: { name: 'Ferreiro', max: 20, pop: 20, wood: 220, stone: 180, iron: 240, factor: 1.28 },
+        market: { name: 'Mercado', max: 25, pop: 20, wood: 100, stone: 100, iron: 100, factor: 1.28 },
+        wood: { name: 'Bosque', max: 30, pop: 5, wood: 50, stone: 60, iron: 40, factor: 1.25 },
+        stone: { name: 'Poco de Argila', max: 30, pop: 10, wood: 65, stone: 50, iron: 40, factor: 1.27 },
+        iron: { name: 'Mina de Ferro', max: 30, pop: 10, wood: 75, stone: 65, iron: 70, factor: 1.26 },
+        farm: { name: 'Fazenda', max: 30, pop: 0, wood: 45, stone: 40, iron: 30, factor: 1.3 },
+        storage: { name: 'Armazem', max: 30, pop: 0, wood: 60, stone: 50, iron: 40, factor: 1.265 },
+        hide: { name: 'Esconderijo', max: 10, pop: 2, wood: 50, stone: 60, iron: 50, factor: 1.25 },
+        wall: { name: 'Muralha', max: 20, pop: 5, wood: 50, stone: 100, iron: 20, factor: 1.26 },
+        watchtower: { name: 'Torre de Vigia', max: 20, pop: 500, wood: 12000, stone: 14000, iron: 10000, factor: 1.17 }
     };
 
-    function getCurrentWorld() {
-        if (typeof game_data !== 'undefined' && game_data.world) {
-            return String(game_data.world).toLowerCase();
-        }
+    const UNITS = {
+        spear: { name: 'Lanceiro', wood: 50, stone: 30, iron: 10, pop: 1 },
+        sword: { name: 'Espadachim', wood: 30, stone: 30, iron: 70, pop: 1 },
+        axe: { name: 'Machado', wood: 60, stone: 30, iron: 40, pop: 1 },
+        archer: { name: 'Arqueiro', wood: 100, stone: 30, iron: 60, pop: 1 },
+        spy: { name: 'Explorador', wood: 50, stone: 50, iron: 20, pop: 2 },
+        light: { name: 'Cavalaria Leve', wood: 125, stone: 100, iron: 250, pop: 4 },
+        marcher: { name: 'Arqueiro a Cavalo', wood: 250, stone: 100, iron: 150, pop: 5 },
+        heavy: { name: 'Cavalaria Pesada', wood: 200, stone: 150, iron: 600, pop: 6 },
+        ram: { name: 'Ariete', wood: 300, stone: 200, iron: 200, pop: 5 },
+        catapult: { name: 'Catapulta', wood: 320, stone: 400, iron: 100, pop: 8 },
+        knight: { name: 'Paladino', wood: 20, stone: 20, iron: 40, pop: 10 },
+        snob: { name: 'Nobre', wood: 40000, stone: 50000, iron: 50000, pop: 100 }
+    };
 
-        const host = window.location.hostname.toLowerCase();
-        const match = host.match(/(br\d+)\./);
-        return match ? match[1] : null;
+    const state = {
+        buildings: {},
+        units: {},
+        activeTab: 'buildings'
+    };
+
+    Object.keys(BUILDINGS).forEach((id) => {
+        const current = clampInt(CURRENT_BUILDINGS[id], 0, BUILDINGS[id].max);
+        state.buildings[id] = { current, target: Math.min(BUILDINGS[id].max, current + 1) };
+    });
+    Object.keys(UNITS).forEach((id) => {
+        state.units[id] = 0;
+    });
+
+    function clampInt(value, min, max) {
+        const parsed = Math.floor(Number(String(value ?? '').replace(/[^\d-]/g, '')));
+        if (!Number.isFinite(parsed)) return min;
+        return Math.min(max, Math.max(min, parsed));
     }
 
-    function openCurrentWorldTwStatsMap() {
-        const world = getCurrentWorld();
-
-        if (!world) {
-            alert('Não foi possível detectar o mundo atual.');
-            return;
-        }
-
-        window.open(`https://www.twstats.com/${world}/index.php?page=map`, '_blank');
+    function costForLevel(def, level) {
+        return {
+            wood: Math.round(def.wood * Math.pow(def.factor, level - 1)),
+            stone: Math.round(def.stone * Math.pow(def.factor, level - 1)),
+            iron: Math.round(def.iron * Math.pow(def.factor, level - 1)),
+            pop: Math.round(def.pop * Math.pow(1.17, level - 1))
+        };
     }
 
-    function openCurrentWorldReplay() {
-        const world = getCurrentWorld();
+    function emptyTotal() {
+        return { wood: 0, stone: 0, iron: 0, pop: 0 };
+    }
 
-        if (!world) {
-            alert('Não foi possível detectar o mundo atual.');
-            return;
-        }
+    function addToTotal(total, cost, multiplier = 1) {
+        total.wood += cost.wood * multiplier;
+        total.stone += cost.stone * multiplier;
+        total.iron += cost.iron * multiplier;
+        total.pop += cost.pop * multiplier;
+    }
 
-       window.open(`https://twreplay.com/server/br/world/${world}/`, '_blank');
+    function getBuildingTotal() {
+        const total = emptyTotal();
+        Object.entries(state.buildings).forEach(([id, levels]) => {
+            const def = BUILDINGS[id];
+            const from = clampInt(levels.current, 0, def.max);
+            const to = clampInt(levels.target, 0, def.max);
+            if (to <= from) return;
+            for (let level = from + 1; level <= to; level += 1) {
+                addToTotal(total, costForLevel(def, level));
+            }
+        });
+        return total;
+    }
+
+    function getUnitTotal() {
+        const total = emptyTotal();
+        Object.entries(state.units).forEach(([id, amount]) => {
+            const qty = clampInt(amount, 0, 999999);
+            if (!qty) return;
+            addToTotal(total, UNITS[id], qty);
+        });
+        return total;
+    }
+
+    function formatNumber(value) {
+        return Math.round(value).toLocaleString('pt-BR');
+    }
+
+    function sumTotal() {
+        const buildings = getBuildingTotal();
+        const units = getUnitTotal();
+        return {
+            wood: buildings.wood + units.wood,
+            stone: buildings.stone + units.stone,
+            iron: buildings.iron + units.iron,
+            pop: buildings.pop + units.pop
+        };
     }
 
     function injectStyles() {
         const css = `
-            #mltk-wrapper {
-                position: fixed;
-                top: 45px;
-                right: 0;
-                z-index: 999999;
-                display: flex;
-                align-items: flex-start;
-                font-family: Verdana, Arial, sans-serif;
-            }
-
-            #mltk-icon {
-                width: 72px;
-                height: 120px;
-                border: 1px solid #777;
-                border-right: none;
-                border-radius: 12px 0 0 12px;
-                overflow: hidden;
-                background: #111;
-                box-shadow: -2px 2px 8px rgba(0,0,0,0.35);
-                flex-shrink: 0;
-            }
-
-            #mltk-icon img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                display: block;
-            }
-
-            #mltk-panel {
-                width: 250px;
-                min-height: 90px;
-                background: #f0d000;
-                border: 1px solid #777;
-                border-right: none;
-                box-shadow: -2px 2px 8px rgba(0,0,0,0.25);
-                display: none;
-                padding: 8px 10px;
-                box-sizing: border-box;
-            }
-
-            #mltk-wrapper:hover #mltk-panel {
-                display: block;
-            }
-
-            .mltk-title {
-                text-align: center;
-                font-weight: bold;
-                font-size: 14px;
-                color: #006400;
-                text-decoration: underline;
-                margin-bottom: 8px;
-            }
-
-            .mltk-version-line {
-                font-size: 13px;
-                font-weight: bold;
-                font-style: italic;
-                line-height: 1.4;
-                text-align: center;
-            }
-
-            .mltk-version-line .toolkit {
-                color: #d10000;
-            }
-
-            .mltk-credits {
-                margin-top: 8px;
-                font-size: 12px;
-                text-align: center;
-                color: #3b2a14;
-            }
-
-            .mltk-credits a {
-                color: #8b0000;
-                font-weight: bold;
-                text-decoration: none;
-            }
-
-            .mltk-credits a:hover {
-                text-decoration: underline;
-            }
-
-            #mltk-bottom-bar {
-                position: fixed;
-                left: 10px;
-                bottom: 18px;
-                z-index: 999998;
-                display: flex;
-                gap: 6px;
-                align-items: flex-end;
-                font-family: Verdana, Arial, sans-serif;
-            }
-
-            .mltk-cat {
-                position: relative;
-                min-width: 115px;
-                height: 46px;
-                background: #f3e2b8;
-                border: 1px dashed #c4471c;
-                border-radius: 6px;
-                box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 6px;
-                padding: 0 10px;
-                box-sizing: border-box;
-                cursor: pointer;
-                font-size: 12px;
-                font-style: italic;
-                font-weight: bold;
-                color: #8b0000;
-            }
-
-            .mltk-cat:hover {
-                background: #f7eac8;
-            }
-
-            .mltk-cat-icon {
-                font-size: 22px;
-                line-height: 1;
-            }
-
-            .mltk-cat-label {
-                font-size: 14px;
-            }
-
-            .mltk-submenu {
-                position: absolute;
-                left: 0;
-                bottom: 42px;
-                min-width: 260px;
-                background: #f7f0d8;
-                border: 1px solid #9b7b4d;
-                box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-                display: none;
-                padding: 6px;
-                border-radius: 6px;
-                z-index: 999999;
-            }
-
-            .mltk-cat:hover .mltk-submenu,
-            .mltk-submenu:hover {
-                display: block;
-            }
-
-            .mltk-submenu-item {
-                display: block;
-                padding: 6px 8px;
-                color: #3b2a14;
-                text-decoration: none;
-                font-size: 13px;
-                border-radius: 4px;
-                cursor: pointer;
-                line-height: 1.25;
-            }
-
-            .mltk-submenu-item:hover {
-                background: #ead7aa;
-                color: #8b0000;
-            }
+            #${APP_ID}{position:fixed;top:80px;left:50%;transform:translateX(-50%);width:min(920px,calc(100vw - 24px));max-height:82vh;z-index:999999;background:#f4e4bc;border:2px solid #7d510f;border-radius:6px;box-shadow:0 8px 28px rgba(0,0,0,.45);font-family:Verdana,Arial,sans-serif;color:#2f2212;overflow:hidden}
+            #${APP_ID} *{box-sizing:border-box}
+            .ks-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:#7d510f;color:#fff}
+            .ks-title{font-size:14px;font-weight:700}
+            .ks-version{font-size:11px;opacity:.85}
+            .ks-close{width:28px;height:28px;border:1px solid rgba(255,255,255,.45);border-radius:4px;background:#5f3d0a;color:#fff;font-weight:700;cursor:pointer}
+            .ks-tabs{display:flex;gap:6px;padding:8px 10px;background:#e6cf9c;border-bottom:1px solid #b49355}
+            .ks-tab{border:1px solid #9b7b4d;border-radius:4px;background:#f7f0d8;color:#3b2a14;padding:7px 10px;font-weight:700;cursor:pointer}
+            .ks-tab.active{background:#8b5a2b;color:#fff}
+            .ks-body{padding:10px;overflow:auto;max-height:calc(82vh - 112px)}
+            .ks-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+            .ks-btn{border:1px solid #7d510f;border-radius:4px;background:#8b5a2b;color:#fff;padding:7px 10px;font-weight:700;cursor:pointer}
+            .ks-btn.secondary{background:#f7f0d8;color:#3b2a14}
+            .ks-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px}
+            .ks-row{display:grid;grid-template-columns:1fr 72px 72px;gap:6px;align-items:center;padding:7px;background:#fff8df;border:1px solid #d5b876;border-radius:4px}
+            .ks-row.unit{grid-template-columns:1fr 90px}
+            .ks-name{font-weight:700;min-width:0}
+            .ks-sub{font-size:11px;color:#6a5330;margin-top:2px}
+            .ks-input{width:100%;height:30px;border:1px solid #a88d57;border-radius:4px;background:#fff;padding:4px 6px;text-align:center}
+            .ks-summary{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:8px;margin:10px 0}
+            .ks-card{background:#fff8df;border:1px solid #d5b876;border-radius:4px;padding:10px}
+            .ks-card strong{display:block;font-size:12px;color:#6a3000;margin-bottom:4px}
+            .ks-card span{font-size:18px;font-weight:700}
+            .ks-note{font-size:11px;color:#614b2c;line-height:1.35;margin-top:8px}
+            @media (max-width:620px){#${APP_ID}{top:54px}.ks-row{grid-template-columns:1fr 58px 58px}.ks-summary{grid-template-columns:repeat(2,1fr)}.ks-tab,.ks-btn{padding:7px 8px}}
         `;
-
-        $('<style id="mltk-style"></style>').text(css).appendTo('head');
+        const style = document.createElement('style');
+        style.id = STYLE_ID;
+        style.textContent = css;
+        document.head.appendChild(style);
     }
 
-    function buildBottomBarHtml() {
-        return TOOLKIT_CONFIG.categories.map((category, categoryIndex) => {
-            const itemsHtml = category.items.map((item, itemIndex) => `
-                <span
-                    class="mltk-submenu-item"
-                    data-category-index="${categoryIndex}"
-                    data-item-index="${itemIndex}"
-                >
-                    ${item.label}
-                </span>
-            `).join('');
-
-            return `
-                <div class="mltk-cat">
-                    <span class="mltk-cat-icon">${category.icon}</span>
-                    <span class="mltk-cat-label">${category.label}</span>
-                    <div class="mltk-submenu">
-                        ${itemsHtml}
-                    </div>
+    function createShell() {
+        const root = document.createElement('div');
+        root.id = APP_ID;
+        root.innerHTML = `
+            <div class="ks-head">
+                <div>
+                    <div class="ks-title">Simulador de Construcoes e Tropas</div>
+                    <div class="ks-version">KIARA v${VERSION} | velocidade do mundo: ${formatNumber(WORLD_SPEED)}x</div>
                 </div>
-            `;
-        }).join('');
-    }
-
-    function createMenu() {
-        const html = `
-            <div id="mltk-wrapper">
-                <div id="mltk-panel">
-                    <div class="mltk-title">Script KIARA</div>
-
-                    <div class="mltk-version-line">
-                        <div class="toolkit">Versão: ${TOOLKIT_CONFIG.version}</div>
-                    </div>
-
-                    <div class="mltk-credits">
-                        Criado por
-                        <a href="https://forum.tribalwars.com.br/index.php?members/mat-legend.106854/" target="_blank">
-                            Mat-Legend
-                        </a>
-                    </div>
-                </div>
-
-                <div id="mltk-icon">
-                    <img src="${TOOLKIT_CONFIG.iconUrl}" alt="Toolkit Icon">
-                </div>
+                <button class="ks-close" type="button" data-action="close">X</button>
             </div>
-        `;
-
-        const bottomBarHtml = `
-            <div id="mltk-bottom-bar">
-                ${buildBottomBarHtml()}
+            <div class="ks-tabs">
+                <button class="ks-tab active" type="button" data-tab="buildings">Construcoes</button>
+                <button class="ks-tab" type="button" data-tab="units">Tropas</button>
+                <button class="ks-tab" type="button" data-tab="summary">Resumo</button>
             </div>
+            <div class="ks-body"></div>
         `;
-
-        $('body').append(html);
-        $('body').append(bottomBarHtml);
+        document.body.appendChild(root);
+        root.addEventListener('click', onClick);
+        root.addEventListener('input', onInput);
+        render();
     }
 
-    function bindEvents() {
-        $(document).on('click', '.mltk-submenu-item', function () {
-            const categoryIndex = Number($(this).attr('data-category-index'));
-            const itemIndex = Number($(this).attr('data-item-index'));
-            const item = TOOLKIT_CONFIG.categories[categoryIndex]?.items[itemIndex];
+    function onClick(event) {
+        const tab = event.target.closest('[data-tab]')?.dataset.tab;
+        const action = event.target.closest('[data-action]')?.dataset.action;
+        if (tab) {
+            state.activeTab = tab;
+            render();
+            return;
+        }
+        if (action === 'close') {
+            document.getElementById(APP_ID)?.remove();
+            document.getElementById(STYLE_ID)?.remove();
+            return;
+        }
+        if (action === 'reset-units') {
+            Object.keys(state.units).forEach((id) => {
+                state.units[id] = 0;
+            });
+            render();
+            return;
+        }
+        if (action === 'next-building') {
+            Object.keys(BUILDINGS).forEach((id) => {
+                const current = state.buildings[id].current;
+                state.buildings[id].target = Math.min(BUILDINGS[id].max, current + 1);
+            });
+            render();
+        }
+    }
 
-            if (item && typeof item.action === 'function') {
-                item.action();
-            }
+    function onInput(event) {
+        const input = event.target;
+        const building = input.dataset.building;
+        const unit = input.dataset.unit;
+        if (building) {
+            const field = input.dataset.field;
+            const max = BUILDINGS[building].max;
+            state.buildings[building][field] = clampInt(input.value, 0, max);
+            renderSummaryOnly();
+        }
+        if (unit) {
+            state.units[unit] = clampInt(input.value, 0, 999999);
+            renderSummaryOnly();
+        }
+    }
+
+    function render() {
+        const root = document.getElementById(APP_ID);
+        if (!root) return;
+        root.querySelectorAll('.ks-tab').forEach((button) => {
+            button.classList.toggle('active', button.dataset.tab === state.activeTab);
+        });
+        const body = root.querySelector('.ks-body');
+        if (state.activeTab === 'buildings') body.innerHTML = renderBuildings();
+        if (state.activeTab === 'units') body.innerHTML = renderUnits();
+        if (state.activeTab === 'summary') body.innerHTML = renderSummaryTab();
+    }
+
+    function renderSummaryOnly() {
+        document.querySelectorAll('[data-summary]').forEach((node) => {
+            const total = sumTotal();
+            node.innerHTML = summaryCards(total);
         });
     }
 
-    function init() {
-        injectStyles();
-        createMenu();
-        bindEvents();
+    function summaryCards(total) {
+        return `
+            <div class="ks-card"><strong>Madeira</strong><span>${formatNumber(total.wood)}</span></div>
+            <div class="ks-card"><strong>Argila</strong><span>${formatNumber(total.stone)}</span></div>
+            <div class="ks-card"><strong>Ferro</strong><span>${formatNumber(total.iron)}</span></div>
+            <div class="ks-card"><strong>Populacao</strong><span>${formatNumber(total.pop)}</span></div>
+        `;
     }
 
-    init();
+    function renderBuildings() {
+        const rows = Object.entries(BUILDINGS).map(([id, def]) => {
+            const item = state.buildings[id];
+            return `
+                <div class="ks-row">
+                    <div class="ks-name">${def.name}<div class="ks-sub">max. ${def.max}</div></div>
+                    <input class="ks-input" data-building="${id}" data-field="current" type="number" min="0" max="${def.max}" value="${item.current}" title="Nivel atual">
+                    <input class="ks-input" data-building="${id}" data-field="target" type="number" min="0" max="${def.max}" value="${item.target}" title="Nivel alvo">
+                </div>
+            `;
+        }).join('');
+        return `
+            <div class="ks-toolbar">
+                <button class="ks-btn secondary" type="button" data-action="next-building">Alvo +1 em tudo</button>
+                <span class="ks-note">Colunas: nivel atual e nivel alvo.</span>
+            </div>
+            <div class="ks-summary" data-summary>${summaryCards(sumTotal())}</div>
+            <div class="ks-grid">${rows}</div>
+            <div class="ks-note">Valores sao estimativas baseadas nos custos padrao do Tribal Wars. Mundos especiais podem ter ajustes.</div>
+        `;
+    }
+
+    function renderUnits() {
+        const rows = Object.entries(UNITS).map(([id, def]) => `
+            <div class="ks-row unit">
+                <div class="ks-name">${def.name}<div class="ks-sub">${def.wood}/${def.stone}/${def.iron} | pop ${def.pop}</div></div>
+                <input class="ks-input" data-unit="${id}" type="number" min="0" max="999999" value="${state.units[id]}" title="Quantidade">
+            </div>
+        `).join('');
+        return `
+            <div class="ks-toolbar">
+                <button class="ks-btn secondary" type="button" data-action="reset-units">Zerar tropas</button>
+            </div>
+            <div class="ks-summary" data-summary>${summaryCards(sumTotal())}</div>
+            <div class="ks-grid">${rows}</div>
+        `;
+    }
+
+    function renderSummaryTab() {
+        const buildings = getBuildingTotal();
+        const units = getUnitTotal();
+        const total = sumTotal();
+        return `
+            <div class="ks-summary" data-summary>${summaryCards(total)}</div>
+            <div class="ks-grid">
+                <div class="ks-card">
+                    <strong>Construcoes</strong>
+                    Madeira: ${formatNumber(buildings.wood)}<br>
+                    Argila: ${formatNumber(buildings.stone)}<br>
+                    Ferro: ${formatNumber(buildings.iron)}<br>
+                    Populacao: ${formatNumber(buildings.pop)}
+                </div>
+                <div class="ks-card">
+                    <strong>Tropas</strong>
+                    Madeira: ${formatNumber(units.wood)}<br>
+                    Argila: ${formatNumber(units.stone)}<br>
+                    Ferro: ${formatNumber(units.iron)}<br>
+                    Populacao: ${formatNumber(units.pop)}
+                </div>
+            </div>
+            <div class="ks-note">Dica: como o menu KIARA carrega este arquivo por uma URL fixa, corrigir o arquivo no GitHub ja faz o botao voltar a funcionar para todo mundo apos o cache do CDN atualizar.</div>
+        `;
+    }
+
+    injectStyles();
+    createShell();
 })();
